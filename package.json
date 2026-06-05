@@ -9,7 +9,10 @@
     "preview": "vite preview",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
-    "format": "oxfmt src/"
+    "format": "oxfmt src/",
+    "lint": "eslint .",
+    "type-check": "vue-tsc --noEmit",
+    "format": "prettier --write ."
   },
   "dependencies": {
     "pinia": "^3.0.4",
