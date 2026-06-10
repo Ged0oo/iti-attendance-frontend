@@ -1,11 +1,11 @@
 <script setup lang="ts"></script>
 
 <template>
-  <h1 class="text-3xl font-bold text-primary  font-h1 rounded-xl shadow-elevated">You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <nav class="p-4 bg-surface-container flex gap-4">
+    <router-link to="/attendance/scan" class="text-primary font-bold">QR Scanner</router-link>
+    <router-link to="/attendance/log/1" class="text-primary font-bold">View Log (Session 1)</router-link>
+  </nav>
+  <router-view />
 </template>
 
 <style scoped></style>

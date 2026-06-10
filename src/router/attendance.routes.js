@@ -5,16 +5,23 @@ export default [
     {
         path: '/attendance/scan',
         name: 'attendance-scan',
-        component: QrScannerView
+        component: QrScannerView,
+        meta: { requiresAuth: true }
     },
     {
         path: '/attendance/log/:sessionId',
         name: 'attendance-log',
-        component: AttendanceLogView
+        component: AttendanceLogView,
     },
     {
         path: '/attendance/projector/:sessionId',
         name: 'attendance-projector',
-        component: () => import('@/views/attendance/SessionQrView.vue')
+        component: () => import('@/views/attendance/SessionQrView.vue'),
+    },
+    {
+        path: '/attendance/ledger',
+        name: 'student-ledger',
+        component: () => import('@/views/excuses/LedgerBalanceView.vue'),
+        meta: { requiresAuth: true }
     }
 ];

@@ -80,23 +80,13 @@ let countdownId = null;
 const fetchNewQrCode = async () => {
   loading.value = true;
   try {
-    const response = await axios.get(`${API_URL}/sessions/1/qr-code`, {
-      headers: { 'Authorization': `Bearer ${TOKEN}` }
-    });
-    
+    const response = await axios.get(`${API_URL}/sessions/1/qr-code`);
     qrPayload.value = response.data.qr_payload;
     validSeconds.value = response.data.expires_in;
     countdown.value = response.data.expires_in;
     
-    // Optional: Fetch current attendance count to update the footer
-    const attResponse = await axios.get(`${API_URL}/sessions/1/attendance`, {
-      headers: {
-        'Authorization': `Bearer ${TOKEN}`,
-        'Accept': 'application/json'
-    }
-    });
+    const attResponse = await axios.get(`${API_URL}/sessions/1/attendance`);
     checkedInCount.value = attResponse.data.length;
-
   } catch (error) {
     console.error("Failed to fetch QR", error);
   } finally {
