@@ -28,16 +28,10 @@ export const useAttendanceStore = defineStore('attendance', {
                 const response = await axios.post(`${API_URL}/attendance/scan`, {
                     session_qr_code: encryptedPayload,
                     student_id: 1
-                }, {
-                    headers: {
-                        'Authorization': 'Bearer 1|ZhOgRhryvO7FNOgq6r7gbDKlkrvDBEsr0Xv12TqI1f7ba1af',
-                        'Content-Type': 'application/json'
-                    }
                 });
 
                 this.lastScanData = response.data.data;
                 this.scanStatus = 'success';
-
             }
             catch (error) {
                 this.scanError = error.response?.data?.message || "Failed to scan QR code.";
