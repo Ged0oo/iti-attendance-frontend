@@ -6,7 +6,7 @@ export function useAuth() {
   const authStore = useAuthStore();
   const router = useRouter();
 
-  const api = useApi("http://127.0.0.1:8000/api");
+  const api = useApi(import.meta.env.VITE_API_BASE_URL);
 
   const login = async (email: string, password: string) => {
     await api.post({ email, password }, "login");
