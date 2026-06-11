@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useGradingStore } from '../../stores/grading';

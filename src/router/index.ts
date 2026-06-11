@@ -27,7 +27,8 @@ router.beforeEach((to, _from, next) => {
     return next({ name: 'login' })
   }
 
-  if (to.meta.roles && !to.meta.roles.includes(auth.userRole)) {
+  const requiredRoles = to.meta.roles as string[] | undefined
+  if (requiredRoles && auth.userRole && !requiredRoles.includes(auth.userRole)) {
     return next({ name: 'login' })
   }
 
