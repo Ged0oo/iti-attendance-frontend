@@ -7,6 +7,7 @@ const store = useCohortStore()
 
 const students = ref([])
 const atRiskList = ref([])
+const distribution = ref(null)
 
 const activeCohort = computed(
   () => store.cohorts.find((c) => c.name === 'Intake 46') || store.cohorts[0] || null,
@@ -17,13 +18,17 @@ const kpis = computed(() => [
   { label: 'At-Risk Students', value: String(atRiskList.value.length), icon: 'warning', tone: 'danger', note: 'Flagged students', noteIcon: 'error' },
 ])
 
-const gradeBars = [
-  { range: '90-100', pct: 35, fail: false },
-  { range: '80-89', pct: 42, fail: false },
-  { range: '70-79', pct: 15, fail: false },
-  { range: '60-69', pct: 5, fail: false },
-  { range: '0-59', pct: 3, fail: true },
-]
+const gradeBars = computed(() => {
+  const buckets = distribution.value?.buckets ?? []
+  const total = buckets.reduce((sum, b) => sum + Number(b.count || 0), 0)
+  return buckets.map((b) => ({
+    range: b.label,
+    pct: total > 0 ? Math.round((Number(b.count || 0) / total) * 100) : 0,
+    fail: b.label === '<60',
+  }))
+})
+
+const hasGrades = computed(() => (distribution.value?.student_course_count ?? 0) > 0)
 
 function initials(name) {
   return (name || '?').split(' ').map((w) => w.charAt(0)).join('').slice(0, 2).toUpperCase()
@@ -36,6 +41,10 @@ onMounted(async () => {
   } catch (e) { /* ignore */ }
   try {
     atRiskList.value = await store.fetchAtRiskStudents()
+  } catch (e) { /* ignore */ }
+  try {
+    const params = activeCohort.value ? { cohort_id: activeCohort.value.id } : {}
+    distribution.value = await store.fetchGradeDistribution(params)
   } catch (e) { /* ignore */ }
 })
 </script>
@@ -103,9 +112,12 @@ onMounted(async () => {
       <div class="lg:col-span-7 bg-surface rounded-xl shadow-sm p-6 border border-transparent">
         <div class="flex justify-between items-center mb-6">
           <h3 class="font-h3 text-h3 text-on-surface">Grade Distribution</h3>
-          <span class="font-label-caps text-label-caps text-on-surface-variant uppercase opacity-60">Sample · grading module</span>
+          <span v-if="activeCohort" class="font-label-caps text-label-caps text-on-surface-variant uppercase opacity-60">{{ activeCohort.name }}</span>
         </div>
-        <div class="space-y-4 pt-2">
+        <p v-if="!hasGrades" class="text-center text-on-surface-variant font-body-sm text-body-sm py-10">
+          No grades recorded yet.
+        </p>
+        <div v-else class="space-y-4 pt-2">
           <div
             v-for="bar in gradeBars"
             :key="bar.range"
