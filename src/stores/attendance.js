@@ -1,29 +1,13 @@
 import { defineStore } from 'pinia';
-import axios from 'axios';
+import api from '@/services/api';
 
 export const useAttendanceStore = defineStore('attendance', {
     state: () => ({
-        attendanceRecords: [],
-        loading: false,
-        scanStatus: "idle",
-        lastScanData: null,
-        scanError: null,
         isProcessing: false,
         lastScan: null,
         sessionLogs: []
     }),
     actions: {
-        async fetchLogs(sessionId) {
-            this.loading = true;
-            try {
-                const response = await axios.get(`/sessions/${sessionId}/attendance`);
-                this.attendanceRecords = response.data;
-            } catch (error) {
-                console.error("Failed to fetch attendance logs:", error);
-            } finally {
-                this.loading = false;
-            }
-        },
         async submitScan(qrCodeString) {
             this.isProcessing = true;
             this.lastScan = null;
@@ -33,18 +17,37 @@ export const useAttendanceStore = defineStore('attendance', {
                     session_qr_code: qrCodeString 
                 });
                 
+                const responseData = response.data.data || response.data;
+                
+                // Force the message to be a string
+                let displayMessage = 'Scan successful!';
+                if (typeof responseData.message === 'string') {
+                    displayMessage = responseData.message;
+                }
+                
                 this.lastScan = {
                     success: true,
-                    status: response.data.status,
-                    timestamp: response.data.timestamp,
-                    message: response.data.message || 'Scan successful!'
+                    status: responseData.status,
+                    timestamp: responseData.timestamp,
+                    message: displayMessage
                 };
                 
                 return this.lastScan;
             } catch (error) {
+                // Safely extract error messages even if Laravel returns an object
+                let errorMsg = 'Invalid or expired QR code.';
+                const backendMessage = error.response?.data?.message;
+                
+                if (typeof backendMessage === 'string') {
+                    errorMsg = backendMessage;
+                } else if (typeof backendMessage === 'object') {
+                    // If it's a validation object, stringify it so we can read it
+                    errorMsg = JSON.stringify(backendMessage); 
+                }
+
                 this.lastScan = {
                     success: false,
-                    message: error.response?.data?.message || 'Invalid or expired QR code.'
+                    message: errorMsg
                 };
                 throw this.lastScan;
             } finally {

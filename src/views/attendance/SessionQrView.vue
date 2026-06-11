@@ -1,144 +1,132 @@
 <template>
-  <div class="bg-[#0D0505] min-h-screen flex flex-col items-center justify-center relative font-body-md">
-    <main class="flex-1 flex flex-col items-center justify-center w-full max-w-5xl mx-auto p-8 relative z-10">
+  <main class="flex-1 flex flex-col min-w-0 bg-canvas min-h-screen items-center justify-center p-4 md:p-8">
+    
+    <div v-if="loading" class="flex flex-col items-center justify-center">
+      <span class="material-symbols-outlined animate-spin text-primary text-[64px]">progress_activity</span>
+      <p class="font-h3 mt-4 text-on-surface-variant animate-pulse">Generating Secure QR Code...</p>
+    </div>
+
+    <div v-else-if="errorMessage" class="bg-danger-mist border border-danger/20 rounded-2xl p-8 max-w-lg text-center shadow-elevated">
+      <span class="material-symbols-outlined text-danger text-[64px] mb-4 block">error</span>
+      <h2 class="font-h2 text-danger">Failed to Load Session</h2>
+      <p class="font-body-md text-on-surface-variant mt-2">{{ errorMessage }}</p>
+      <button @click="router.push('/dashboard')" class="mt-6 px-6 py-3 bg-surface border border-outline-variant rounded-lg font-label hover:bg-surface-variant/50 transition-colors">
+        Return to Dashboard
+      </button>
+    </div>
+
+    <div v-else class="w-full max-w-3xl bg-surface rounded-[2rem] shadow-elevated border border-outline-variant/30 overflow-hidden flex flex-col md:flex-row">
       
-      <div class="text-center mb-12 space-y-4">
-        <h1 class="font-h1 text-[48px] tracking-tight leading-tight text-white drop-shadow-md">
-          Laravel Basics — Lab Session
-        </h1>
-        <p class="font-mono text-[20px] text-gray-400">
-          Jun 2, 2026 · 09:00 - 13:00
-        </p>
+      <div class="bg-primary-mist/30 p-8 md:p-12 md:w-2/5 flex flex-col justify-center border-b md:border-b-0 md:border-r border-outline-variant/30">
+        <span class="inline-block px-3 py-1 bg-primary/10 text-primary font-label-caps text-[12px] rounded-full w-fit mb-4 uppercase tracking-wider">
+          Active Session
+        </span>
+        <h1 class="font-h2 text-on-surface mb-2 leading-tight">{{ sessionDetails?.course_name || 'Loading Course...' }}</h1>
+        <p class="font-body-lg text-on-surface-variant mb-6">{{ sessionDetails?.type || 'Lecture' }}</p>
+        
+        <div class="space-y-4 font-body-md text-on-surface">
+          <div class="flex items-center gap-3 bg-surface p-3 rounded-xl shadow-soft">
+            <span class="material-symbols-outlined text-primary">calendar_today</span>
+            {{ formatDate(sessionDetails?.date) }}
+          </div>
+          <div class="flex items-center gap-3 bg-surface p-3 rounded-xl shadow-soft">
+            <span class="material-symbols-outlined text-primary">schedule</span>
+            {{ formatTime(sessionDetails?.start_time) }} - {{ formatTime(sessionDetails?.end_time) }}
+          </div>
+        </div>
       </div>
 
-      <div class="relative flex flex-col items-center">
-        <div class="relative bg-white rounded-xl p-4 mb-8">
-          <div class="absolute inset-[-6px] rounded-2xl border-[6px] border-primary-container animate-pulse-border z-0"></div>
+      <div class="p-8 md:p-16 flex flex-col items-center justify-center flex-1 bg-white">
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-outline-variant/20 mb-6 relative group">
+          <qrcode-vue 
+            :value="qrString" 
+            :size="300" 
+            level="H" 
+            render-as="svg"
+            class="transition-transform duration-300 group-hover:scale-105"
+          />
           
-          <div class="w-[380px] h-[380px] bg-white flex items-center justify-center relative z-10 rounded-lg shadow-inner">
-            <div v-if="loading" class="text-primary font-bold text-xl animate-pulse">
-              Generating Secure Token...
+          <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div class="bg-white p-1 rounded-full">
+              <div class="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center font-bold font-mono text-sm">
+                ITI
+              </div>
             </div>
-            <qrcode-vue 
-              v-else-if="qrPayload"
-              :value="qrPayload" 
-              :size="340" 
-              level="H" 
-              render-as="svg"
-            />
           </div>
         </div>
 
-        <div class="flex items-center space-x-6 text-white text-xl">
-          <span class="font-medium tracking-wide">Scan to check in · Valid for {{ validSeconds }}s</span>
-          <div class="relative w-16 h-16 flex items-center justify-center">
-            <svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" fill="none" r="45" stroke="#2D1515" stroke-width="8"></circle>
-              <circle 
-                class="timer-ring" 
-                cx="50" cy="50" fill="none" r="45" 
-                stroke="#A82020" stroke-linecap="round" stroke-width="8"
-                :style="{ animationDuration: `${validSeconds}s` }"
-                :key="qrPayload" 
-              ></circle>
-            </svg>
-            <span class="font-mono font-bold text-2xl z-10">{{ countdown }}</span>
-          </div>
-        </div>
-      </div>
-    </main>
+        <p class="font-label text-on-surface-variant text-center max-w-xs">
+          Open your ITI Student App and scan this code to register your attendance.
+        </p>
 
-    <footer class="w-full h-24 bg-[#140A0A] border-t border-[#2D1515] flex items-center justify-between px-12 z-20">
-      <div class="flex items-center space-x-3 text-white font-mono text-[28px] font-bold">
-        <span class="material-symbols-outlined text-success text-4xl">check_circle</span>
-        <span>{{ checkedInCount }} / 24 <span class="font-body-md text-[20px] font-normal text-gray-400 ml-2">checked in</span></span>
+        <button @click="fetchQrCode" class="mt-8 flex items-center gap-2 text-primary font-label hover:text-primary-deep transition-colors">
+          <span class="material-symbols-outlined text-[20px]">refresh</span>
+          Refresh QR Code
+        </button>
       </div>
-      <span class="bg-engagement-lab text-white font-bold text-lg px-6 py-2 rounded-full uppercase tracking-wider">
-        Lab
-      </span>
-    </footer>
-  </div>
+    </div>
+
+  </main>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import api from '@/services/api';
 import QrcodeVue from 'qrcode.vue';
-import axios from 'axios';
 
-const API_URL = 'http://13.60.179.178/api';
-const TOKEN = '31|loQlk5mlGuzdSq00qcYuPNMZMyAn3DkInSGydvjh9e36a4a2';
+const route = useRoute();
+const router = useRouter();
 
-const qrPayload = ref('');
 const loading = ref(true);
-const validSeconds = ref(15);
-const countdown = ref(15);
-const checkedInCount = ref(0);
+const errorMessage = ref('');
+const qrString = ref('');
+const sessionDetails = ref(null);
 
-let intervalId = null;
-let countdownId = null;
+const sessionId = route.params.id;
 
-const fetchNewQrCode = async () => {
+const fetchQrCode = async () => {
   loading.value = true;
+  errorMessage.value = '';
+  
   try {
-    const response = await axios.get(`${API_URL}/sessions/1/qr-code`);
-    qrPayload.value = response.data.qr_payload;
-    validSeconds.value = response.data.expires_in;
-    countdown.value = response.data.expires_in;
+    const qrResponse = await api.get(`/sessions/${sessionId}/qr-code`);
     
-    const attResponse = await axios.get(`${API_URL}/sessions/1/attendance`);
-    checkedInCount.value = attResponse.data.length;
+    console.log("Backend QR Response:", qrResponse.data);
+    const payload = qrResponse.data.data || qrResponse.data;
+    
+    qrString.value = payload.qr_payload || payload.qr_code || (typeof payload === 'string' ? payload : 'INVALID_QR_PAYLOAD');
+
+    const sessionResponse = await api.get(`/sessions/${sessionId}`);
+    sessionDetails.value = sessionResponse.data.data || sessionResponse.data;
+
   } catch (error) {
-    console.error("Failed to fetch QR", error);
+    console.error("Failed to load QR code:", error);
+    errorMessage.value = error.response?.data?.message || "Could not retrieve session data.";
   } finally {
     loading.value = false;
   }
 };
 
-const startRotation = () => {
-  fetchNewQrCode();
-  
-  // Timer for the visual countdown number
-  countdownId = setInterval(() => {
-    if (countdown.value > 0) countdown.value--;
-  }, 1000);
+onMounted(() => {
+  if (!sessionId) {
+    errorMessage.value = "No session ID provided.";
+    loading.value = false;
+    return;
+  }
+  fetchQrCode();
+});
 
-  // Interval to fetch a new code right as the old one expires
-  intervalId = setInterval(() => {
-    fetchNewQrCode();
-  }, validSeconds.value * 1000);
+const formatDate = (dateStr) => {
+  if (!dateStr) return 'Today';
+  return new Date(dateStr).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
 };
 
-onMounted(() => {
-  startRotation();
-});
-
-onUnmounted(() => {
-  clearInterval(intervalId);
-  clearInterval(countdownId);
-});
+const formatTime = (timeStr) => {
+  if (!timeStr) return '--:--';
+  const [hours, minutes] = timeStr.split(':');
+  const d = new Date();
+  d.setHours(hours, minutes);
+  return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+};
 </script>
-
-<style scoped>
-.timer-ring {
-  stroke-dasharray: 283;
-  stroke-dashoffset: 283;
-  transform: rotate(-90deg);
-  transform-origin: 50% 50%;
-  animation-name: countdown;
-  animation-timing-function: linear;
-}
-
-@keyframes countdown {
-  from { stroke-dashoffset: 0; }
-  to { stroke-dashoffset: 283; }
-}
-
-@keyframes pulse-border {
-  0% { box-shadow: 0 0 20px rgba(139, 26, 26, 0.3); }
-  50% { box-shadow: 0 0 60px rgba(139, 26, 26, 0.8); }
-  100% { box-shadow: 0 0 20px rgba(139, 26, 26, 0.3); }
-}
-.animate-pulse-border {
-  animation: pulse-border 2s infinite ease-in-out;
-}
-</style>
