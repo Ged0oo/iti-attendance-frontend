@@ -25,6 +25,7 @@ const cohortId = ref('')
 const courses = ref([]) // each: { ...course, components: [], draft: {...} }
 const error = ref('')
 const busy = ref(false)
+const loadingCohorts = ref(true)
 const newCourseName = ref('')
 const confirmState = ref({ open: false, title: '', message: '', confirmLabel: 'Delete', action: null })
 let tempSeq = 0 // ids for optimistic rows until the server returns the real one
@@ -38,13 +39,13 @@ onMounted(async () => {
   try {
     const { data } = await api.get('/api/cohorts')
     cohorts.value = data.data ?? data ?? []
-    if (cohorts.value.length) {
-      cohortId.value = cohorts.value[0].id
-      await loadCourses()
-    }
+    if (cohorts.value.length) cohortId.value = cohorts.value[0].id
   } catch (e) {
     error.value = 'Could not load cohorts.'
+  } finally {
+    loadingCohorts.value = false
   }
+  if (cohortId.value) await loadCourses()
 })
 
 async function loadCourses() {
@@ -221,8 +222,10 @@ const selectedCohortName = computed(
             <select
               v-model="cohortId"
               @change="loadCourses"
-              class="h-11 rounded-lg border border-outline-variant bg-surface px-3 font-body-md text-body-md text-on-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container"
+              :disabled="loadingCohorts"
+              class="h-11 rounded-lg border border-outline-variant bg-surface px-3 font-body-md text-body-md text-on-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container disabled:opacity-60"
             >
+              <option v-if="loadingCohorts" value="">Loading…</option>
               <option v-for="c in cohorts" :key="c.id" :value="c.id">{{ cohortLabel(c) }}</option>
             </select>
           </label>
@@ -230,7 +233,10 @@ const selectedCohortName = computed(
 
         <p v-if="error" class="mb-4 rounded-lg bg-danger-mist text-danger border border-danger/20 px-4 py-2 font-body-sm text-body-sm">{{ error }}</p>
 
-        <div v-if="busy" class="py-10 text-center text-on-surface-variant font-body-sm">Loading…</div>
+        <div v-if="loadingCohorts || busy" class="py-12 flex items-center justify-center gap-2 text-on-surface-variant font-body-sm">
+          <span class="material-symbols-outlined animate-spin text-[20px]">progress_activity</span>
+          {{ loadingCohorts ? 'Loading cohorts…' : 'Loading courses…' }}
+        </div>
 
         <div v-else class="flex flex-col gap-4">
           <p v-if="!courses.length" class="py-8 text-center text-on-surface-variant font-body-sm">No courses in {{ selectedCohortName }} yet. Add the first one below.</p>
