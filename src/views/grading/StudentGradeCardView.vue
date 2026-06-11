@@ -58,16 +58,13 @@ onMounted(loadCard);
         <div class="flex flex-col gap-2">
             <p class="text-sm font-semibold uppercase tracking-wide text-primary-container">Student portal</p>
             <h1 class="font-serif text-4xl text-on-surface">Grade Card</h1>
-            <p class="max-w-3xl text-sm text-slate-600">
-                Read-only grade breakdown. Normalized and effective scores are values returned by the Laravel API.
-            </p>
         </div>
 
         <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
-                <label class="space-y-2">
+            <div class="grid gap-4 sm:grid-cols-[minmax(240px,320px)_auto] sm:items-end">
+                <label class="flex min-w-0 flex-col gap-2">
                     <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Student ID</span>
-                    <input v-model="form.student_id" class="h-11 w-56 rounded-lg border-slate-200 text-sm" type="number" placeholder="Example: 12" />
+                    <input v-model="form.student_id" class="h-11 w-full rounded-lg border-slate-200 text-sm" type="number" placeholder="Example: 12" />
                 </label>
                 <button class="h-11 rounded-lg bg-primary-container px-5 text-sm font-semibold text-white hover:bg-primary disabled:opacity-50" :disabled="loading || !form.student_id" @click="loadCard">
                     Load grade card
@@ -100,7 +97,6 @@ onMounted(loadCard);
                     <div class="mt-8 rounded-xl bg-primary-mist p-5">
                         <p class="text-xs font-semibold uppercase tracking-wide text-primary-container">Course total</p>
                         <p class="mt-2 font-mono text-4xl text-primary-container">{{ totalCourseScore.toFixed(2) }}</p>
-                        <p class="mt-2 text-sm text-slate-600">Sum of backend course totals currently returned for this student.</p>
                     </div>
 
                     <div class="mt-6">

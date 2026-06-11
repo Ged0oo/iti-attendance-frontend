@@ -60,7 +60,7 @@ async function saveExisting(grade) {
         lab_group_id: grade.lab_group_id,
         raw_score: rawDrafts.value[grade.id],
     });
-    notice.value = 'Raw score saved. Normalized score refreshed from backend.';
+    notice.value = 'Raw score saved.';
 }
 
 async function saveNewGrade() {
@@ -77,7 +77,7 @@ async function saveNewGrade() {
     });
     newGrade.student_id = '';
     newGrade.raw_score = '';
-    notice.value = 'Raw score submitted. Backend computed the normalized score.';
+    notice.value = 'Raw score submitted.';
 }
 
 function openOverride(grade) {
@@ -137,9 +137,6 @@ onMounted(async () => {
         <div class="flex flex-col gap-2">
             <p class="text-sm font-semibold uppercase tracking-wide text-primary-container">Instructor grading sheet</p>
             <h1 class="font-serif text-4xl text-on-surface">Grade Entry</h1>
-            <p class="max-w-3xl text-sm text-slate-600">
-                Enter raw scores only. Normalized and effective scores are displayed after the backend returns them.
-            </p>
         </div>
 
         <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -266,7 +263,7 @@ onMounted(async () => {
         <div v-if="overrideForm.grade" class="fixed inset-0 z-50 flex items-center justify-center bg-black/35 p-4">
             <div class="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
                 <h2 class="text-xl font-semibold text-on-surface">Override grade</h2>
-                <p class="mt-1 text-sm text-slate-500">A review note is required and the original backend grade remains auditable.</p>
+                <p class="mt-1 text-sm text-slate-500">A review note is required.</p>
 
                 <div class="mt-5 space-y-4">
                     <label class="block space-y-2">

@@ -15,6 +15,14 @@ function dataObject(response) {
     return response.data?.data ?? response.data ?? {};
 }
 
+function errorMessage(error, fallback = 'Request failed.') {
+    if (error.message === 'Network Error') {
+        return 'Connection failed. Please try again.';
+    }
+
+    return error.response?.data?.message || error.message || fallback;
+}
+
 export const useGradingStore = defineStore('grading', {
     state: () => ({
         grades: [],
@@ -83,7 +91,7 @@ export const useGradingStore = defineStore('grading', {
             try {
                 return await callback();
             } catch (error) {
-                this.error = error.response?.data?.message || error.message || 'Request failed.';
+                this.error = errorMessage(error);
                 throw error;
             } finally {
                 this.loading = false;
@@ -141,7 +149,7 @@ export const useGradingStore = defineStore('grading', {
 
                 return saved;
             } catch (error) {
-                this.error = error.response?.data?.message || error.message || 'Grade save failed.';
+                this.error = errorMessage(error, 'Grade save failed.');
                 throw error;
             } finally {
                 this.saving = false;
@@ -166,7 +174,7 @@ export const useGradingStore = defineStore('grading', {
 
                 return saved;
             } catch (error) {
-                this.error = error.response?.data?.message || error.message || 'Override failed.';
+                this.error = errorMessage(error, 'Override failed.');
                 throw error;
             } finally {
                 this.saving = false;

@@ -93,9 +93,6 @@ onMounted(async () => {
         <div class="flex flex-col gap-2">
             <p class="text-sm font-semibold uppercase tracking-wide text-primary-container">Student support</p>
             <h1 class="font-serif text-4xl text-on-surface">Tags & Notes</h1>
-            <p class="max-w-3xl text-sm text-slate-600">
-                Private grading context for instructors and admins. Tags are controlled values from the backend.
-            </p>
         </div>
 
         <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">

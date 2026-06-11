@@ -40,9 +40,6 @@ onMounted(() => {
         <div class="flex flex-col gap-2">
             <p class="text-sm font-semibold uppercase tracking-wide text-primary-container">Student dashboard</p>
             <h1 class="font-serif text-4xl text-on-surface">My Course Grades</h1>
-            <p class="max-w-3xl text-sm text-slate-600">
-                Component breakdowns are read-only and come from the backend grade card.
-            </p>
         </div>
 
         <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">

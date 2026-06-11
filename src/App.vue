@@ -38,8 +38,8 @@ const navItems = [
       <header class="sticky top-0 z-20 border-b border-slate-200 bg-white px-5 py-4 lg:px-8">
         <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p class="text-xs font-semibold uppercase tracking-wide text-primary-container">Member 6</p>
-            <h2 class="font-serif text-2xl text-on-surface">Grading, Normalization & Student Tags</h2>
+            <p class="text-xs font-semibold uppercase tracking-wide text-primary-container">ITI Portal</p>
+            <h2 class="font-serif text-2xl text-on-surface">Grading & Student Support</h2>
           </div>
           <nav class="flex gap-2 overflow-x-auto lg:hidden">
             <RouterLink

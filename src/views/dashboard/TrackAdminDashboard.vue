@@ -50,9 +50,6 @@ onMounted(loadDashboard);
         <div class="flex flex-col gap-2">
             <p class="text-sm font-semibold uppercase tracking-wide text-primary-container">Track Admin dashboard</p>
             <h1 class="font-serif text-4xl text-on-surface">Grade Health</h1>
-            <p class="max-w-3xl text-sm text-slate-600">
-                Distribution, grader consistency, and grade-related risk signals for the track admin review flow.
-            </p>
         </div>
 
         <div class="grid gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm lg:grid-cols-5">
@@ -71,7 +68,6 @@ onMounted(loadDashboard);
             <div class="rounded-xl bg-white p-5 shadow-sm">
                 <p class="text-sm font-semibold text-slate-500">Average Score</p>
                 <p class="mt-2 font-mono text-4xl text-primary-container">{{ distribution?.average_score ?? 0 }}</p>
-                <p class="mt-1 text-xs text-slate-500">Effective course totals</p>
             </div>
             <div class="rounded-xl bg-[#FFFBEB] p-5 shadow-sm">
                 <p class="text-sm font-semibold text-[#D97706]">Consistency Alerts</p>
@@ -141,7 +137,7 @@ onMounted(loadDashboard);
                     <div class="space-y-2">
                         <p v-if="gradeRiskRows.length === 0" class="text-sm text-slate-500">No grade risk rows loaded.</p>
                         <div v-for="grade in gradeRiskRows" :key="grade.id" class="rounded-lg bg-danger-mist px-4 py-3 text-sm text-danger">
-                            Student #{{ grade.student_id }} - effective score {{ grade.effective_score ?? grade.normalized_score }}
+                            Student #{{ grade.student_id }} - score {{ grade.effective_score ?? grade.normalized_score }}
                         </div>
                     </div>
                 </div>

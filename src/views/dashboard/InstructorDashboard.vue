@@ -44,9 +44,6 @@ onMounted(loadDashboard);
         <div class="flex flex-col gap-2">
             <p class="text-sm font-semibold uppercase tracking-wide text-primary-container">Instructor dashboard</p>
             <h1 class="font-serif text-4xl text-on-surface">Group Grade Distribution</h1>
-            <p class="max-w-3xl text-sm text-slate-600">
-                A focused view for the instructor's assigned lab groups. Backend role scope limits the data returned.
-            </p>
         </div>
 
         <div class="grid gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm md:grid-cols-[1fr_1fr_auto]">
@@ -81,7 +78,6 @@ onMounted(loadDashboard);
                 <div class="rounded-xl bg-white p-6 shadow-sm">
                     <p class="text-sm font-semibold text-slate-500">Average Score</p>
                     <p class="mt-2 font-mono text-4xl text-primary-container">{{ distribution?.average_score ?? 0 }}</p>
-                    <p class="mt-1 text-xs text-slate-500">Effective course totals returned by backend</p>
                 </div>
 
                 <div class="rounded-xl bg-white p-6 shadow-sm">
@@ -89,7 +85,7 @@ onMounted(loadDashboard);
                     <div class="space-y-2">
                         <p v-if="needsReview.length === 0" class="text-sm text-slate-500">No grade risk rows loaded.</p>
                         <div v-for="grade in needsReview" :key="grade.id" class="rounded-lg bg-danger-mist px-4 py-3 text-sm text-danger">
-                            Student #{{ grade.student_id }} - effective score {{ grade.effective_score ?? grade.normalized_score }}
+                            Student #{{ grade.student_id }} - score {{ grade.effective_score ?? grade.normalized_score }}
                         </div>
                     </div>
                 </div>
