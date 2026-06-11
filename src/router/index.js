@@ -10,6 +10,7 @@ import excuseRoutes from './excuse.routes.js'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    { path: '/', redirect: '/login' },
     ...authRoutes,
     ...cohortRoutes,
     ...schedulingRoutes,

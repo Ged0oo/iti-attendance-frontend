@@ -252,8 +252,10 @@ EmU1UvVIEEghSirdlkhEgSLLAjLuWAEHW8tYtGQGCJAvMuGsJEGQtb92SEegtSLKwjLueAEHWM9cxEQG
 
 <script setup lang="ts">
 import { ref, reactive } from "vue";
+import { useRouter } from "vue-router";
 import { useAuth } from "@/composables/useAuth";
 
+const router = useRouter();
 const { login, loading, error } = useAuth();
 
 const showPassword = ref(false);
@@ -264,6 +266,11 @@ const form = reactive({
 });
 
 const handleLogin = async () => {
-  await login(form.email, form.password);
+  try {
+    await login(form.email, form.password);
+    router.push("/dashboard");
+  } catch (e) {
+    // error handled by useAuth
+  }
 };
 </script>

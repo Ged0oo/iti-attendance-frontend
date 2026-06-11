@@ -10,7 +10,7 @@ export const useCohortStore = defineStore('cohort', {
   }),
 
   actions: {
-    // Tracks 
+
     async fetchTracks() {
       this.loading = true
       const { data } = await api.get('/api/tracks')
@@ -36,7 +36,7 @@ export const useCohortStore = defineStore('cohort', {
       this.tracks = this.tracks.filter((t) => t.id !== id)
     },
 
-    // Track Admins 
+
     async fetchTrackAdmins(trackId) {
       const { data } = await api.get(`/api/tracks/${trackId}/admins`)
       return data
@@ -51,7 +51,7 @@ export const useCohortStore = defineStore('cohort', {
       await api.delete(`/api/tracks/${trackId}/admins/${userId}`)
     },
 
-    // Cohorts 
+
     async fetchCohorts() {
       this.loading = true
       const { data } = await api.get('/api/cohorts')
@@ -84,7 +84,7 @@ export const useCohortStore = defineStore('cohort', {
       return data
     },
 
-    // Announcements 
+
     async fetchAnnouncements(cohortId) {
       this.loading = true
       const { data } = await api.get(`/api/cohorts/${cohortId}/announcements`)
@@ -108,6 +108,31 @@ export const useCohortStore = defineStore('cohort', {
     async deleteAnnouncement(id) {
       await api.delete(`/api/announcements/${id}`)
       this.announcements = this.announcements.filter((a) => a.id !== id)
+    },
+
+    async fetchCourses(cohortId) {
+      const { data } = await api.get(`/api/cohorts/${cohortId}/courses`)
+      return data.data ?? data
+    },
+
+    async fetchCourseComponents(courseId) {
+      const { data } = await api.get(`/api/courses/${courseId}/components`)
+      return data.data ?? data
+    },
+
+    async fetchStudents(cohortId) {
+      const { data } = await api.get(`/api/cohorts/${cohortId}/students`)
+      return data.data ?? data
+    },
+
+    async fetchAtRiskStudents() {
+      const { data } = await api.get('/api/students/at-risk')
+      return data.data ?? data
+    },
+
+    async fetchBilling() {
+      const { data } = await api.get('/api/billing')
+      return data.data ?? data
     },
   },
 })

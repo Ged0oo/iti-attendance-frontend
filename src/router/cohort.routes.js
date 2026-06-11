@@ -1,5 +1,11 @@
 export default [
   {
+    path: '/dashboard',
+    name: 'dashboard',
+    component: () => import('../views/dashboard/DashboardView.vue'),
+    meta: { requiresAuth: true, roles: ['branch_manager', 'track_admin'] },
+  },
+  {
     path: '/tracks',
     name: 'tracks',
     component: () => import('../views/cohorts/TrackListView.vue'),
