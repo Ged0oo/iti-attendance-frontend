@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import MainLayout from '../../components/layout/MainLayout.vue'
+import ConfirmModal from '../../components/common/ConfirmModal.vue'
 import { useEngagementStore } from '../../stores/engagement'
 import api from '../../services/api'
 
@@ -25,6 +26,7 @@ const courses = ref([]) // each: { ...course, components: [], draft: {...} }
 const error = ref('')
 const busy = ref(false)
 const newCourseName = ref('')
+const confirmState = ref({ open: false, title: '', message: '', confirmLabel: 'Delete', action: null })
 
 const blankDraft = () => ({ name: '', type: 'lab_deliverable', weight: 10, raw_max: 100 })
 const courseTotal = (course) => course.components.reduce((sum, c) => sum + Number(c.weight), 0)
@@ -82,12 +84,25 @@ async function addCourse() {
   }
 }
 
+function requestRemoveCourse(course) {
+  confirmState.value = {
+    open: true,
+    title: 'Delete course',
+    message: `Delete "${course.name}" and all of its grade components? This cannot be undone.`,
+    confirmLabel: 'Delete course',
+    action: () => removeCourse(course),
+  }
+}
+
 async function removeCourse(course) {
   error.value = ''
+  // optimistic: drop it from the list now so the slow round trip does not feel laggy
+  const backup = courses.value
+  courses.value = courses.value.filter((c) => c.id !== course.id)
   try {
     await store.deleteCourse(course.id)
-    courses.value = courses.value.filter((c) => c.id !== course.id)
   } catch (e) {
+    courses.value = backup
     error.value = store.error || 'Could not remove the course.'
   }
 }
@@ -112,14 +127,36 @@ async function addComponent(course) {
   }
 }
 
+function requestRemoveComponent(course, comp) {
+  confirmState.value = {
+    open: true,
+    title: 'Remove component',
+    message: `Remove "${comp.name}" (${comp.weight}%) from ${course.name}?`,
+    confirmLabel: 'Remove',
+    action: () => removeComponent(course, comp),
+  }
+}
+
 async function removeComponent(course, comp) {
   error.value = ''
+  const backup = course.components
+  course.components = course.components.filter((c) => c.id !== comp.id)
   try {
     await store.deleteComponent(comp.id)
-    course.components = course.components.filter((c) => c.id !== comp.id)
   } catch (e) {
+    course.components = backup
     error.value = store.error || 'Could not remove the component.'
   }
+}
+
+function closeConfirm() {
+  confirmState.value.open = false
+}
+
+function runConfirm() {
+  const action = confirmState.value.action
+  closeConfirm()
+  if (action) action()
 }
 
 const selectedCohortName = computed(
@@ -200,7 +237,7 @@ const selectedCohortName = computed(
                   <span v-if="courseTotal(course) === 100" class="material-symbols-outlined text-[16px]">check</span>
                   <span v-else class="material-symbols-outlined text-[16px]">warning</span>
                 </span>
-                <button class="text-on-surface-variant hover:text-danger transition-colors" title="Remove course" @click="removeCourse(course)">
+                <button class="text-on-surface-variant hover:text-danger transition-colors" title="Remove course" @click="requestRemoveCourse(course)">
                   <span class="material-symbols-outlined text-[20px]">delete</span>
                 </button>
               </div>
@@ -216,7 +253,7 @@ const selectedCohortName = computed(
                 <span class="font-body-md text-body-md text-on-surface flex-1 min-w-0 truncate">{{ comp.name }}</span>
                 <span class="font-label-caps text-label-caps uppercase text-on-surface-variant">{{ comp.type.replace('_', ' ') }}</span>
                 <span class="font-mono text-mono text-on-surface">{{ comp.weight }}%</span>
-                <button class="text-on-surface-variant hover:text-danger transition-colors" title="Remove" @click="removeComponent(course, comp)">
+                <button class="text-on-surface-variant hover:text-danger transition-colors" title="Remove" @click="requestRemoveComponent(course, comp)">
                   <span class="material-symbols-outlined text-[18px]">close</span>
                 </button>
               </div>
@@ -259,5 +296,14 @@ const selectedCohortName = computed(
         </div>
       </section>
     </div>
+
+    <ConfirmModal
+      :open="confirmState.open"
+      :title="confirmState.title"
+      :message="confirmState.message"
+      :confirm-label="confirmState.confirmLabel"
+      @confirm="runConfirm"
+      @cancel="closeConfirm"
+    />
   </MainLayout>
 </template>
