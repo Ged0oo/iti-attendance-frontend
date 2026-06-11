@@ -1,13 +1,5 @@
-import { createRouter, createWebHistory } from "vue-router";
-import authRoutes from "./auth.routes";
-import { useAuthStore } from "@/stores/auth";
-
-const roleMap: Record<string, string> = {
-  track_admin: "admin-dashboard",
-  branch_manager: "manager-dashboard",
-  instructor: "instructor-dashboard",
-  student: "student-dashboard",
-};
+import { createRouter, createWebHistory } from 'vue-router'
+import gradingRoutes from './grading.routes'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),

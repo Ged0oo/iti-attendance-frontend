@@ -9,6 +9,9 @@ export default {
             colors: {
                 "primary": "#690008",
                 "primary-deep": "#6B1212",
+                "primary-ember": "#A82020",
+                "primary-mist": "#F9EAEA",
+                "on-surface": "#251817",
                 "primary-container": "#8b1a1a",
                 "primary-ember": "#A82020",
                 "primary-mist": "#F9EAEA",
@@ -31,15 +34,6 @@ export default {
                 "danger-mist": "#FEF2F2",
                 "info": "#2563EB",
                 "info-mist": "#EFF6FF",
-
-                // Roles & Engagements                                                                             
-                "role-bm": "#7C3AED",
-                "role-ta": "#0369A1",
-                "role-instructor": "#0D9488",
-                "role-student": "#6B7280",
-                "engagement-lecture": "#8B1A1A",
-                "engagement-lab": "#0D9488",
-                "engagement-biz": "#D97706",
             },
             fontFamily: {
                 "display": ["Playfair Display", "serif"],
