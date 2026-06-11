@@ -134,5 +134,15 @@ export const useCohortStore = defineStore('cohort', {
       const { data } = await api.get('/api/billing')
       return data.data ?? data
     },
+
+    async fetchAttendanceRate(params = {}) {
+      const { data } = await api.get('/api/attendance-rate', { params })
+      return data.data ?? data
+    },
+
+    async fetchGradeDistribution(params = {}) {
+      const { data } = await api.get('/api/grade-distribution', { params })
+      return data.data ?? data
+    },
   },
 })

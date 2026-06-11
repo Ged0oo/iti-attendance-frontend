@@ -13,6 +13,7 @@ const search = ref('')
 const selectedId = ref(null)
 
 const admins = ref([])
+const attendanceRate = ref(null)
 const trackCohorts = computed(() =>
   store.cohorts.filter((c) => c.track_id === selected.value?.id),
 )
@@ -30,6 +31,11 @@ const selected = computed(() =>
 async function selectTrack(id) {
   selectedId.value = id
   admins.value = await store.fetchTrackAdmins(id)
+  attendanceRate.value = null
+  try {
+    const rate = await store.fetchAttendanceRate({ track_id: id })
+    attendanceRate.value = rate.attendance_rate
+  } catch (e) { /* ignore */ }
 }
 
 const statusStyles = {
@@ -128,10 +134,10 @@ onMounted(async () => {
             </div>
             <div class="bg-surface p-6 rounded-2xl shadow-sm border-b-4 border-success">
               <p class="font-label text-label text-on-surface-variant mb-4 uppercase tracking-widest opacity-70">Current Attendance</p>
-              <p class="font-kpi text-kpi text-success">—</p>
+              <p class="font-kpi text-kpi text-success">{{ attendanceRate === null ? '—' : attendanceRate + '%' }}</p>
               <div class="mt-4 flex items-center text-on-surface-variant text-[12px] font-medium">
                 <span class="w-2 h-2 rounded-full bg-success mr-2"></span>
-                <span>Provided by attendance module</span>
+                <span>Across all sessions</span>
               </div>
             </div>
             <div class="bg-surface p-6 rounded-2xl shadow-sm border-b-4 border-warning">
