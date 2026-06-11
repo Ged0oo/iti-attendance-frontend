@@ -7,7 +7,10 @@ export const useAttendanceStore = defineStore('attendance', {
         loading: false,
         scanStatus: "idle",
         lastScanData: null,
-        scanError: null
+        scanError: null,
+        isProcessing: false,
+        lastScan: null,
+        sessionLogs: []
     }),
     actions: {
         async fetchLogs(sessionId) {
@@ -21,21 +24,31 @@ export const useAttendanceStore = defineStore('attendance', {
                 this.loading = false;
             }
         },
-        async scanQrCode(encryptedData) {
-            this.scanStatus = "scanning";
-            this.scanError = null;
+        async submitScan(qrCodeString) {
+            this.isProcessing = true;
+            this.lastScan = null;
+            
             try {
-                const response = await axios.post(`${API_URL}/attendance/scan`, {
-                    session_qr_code: encryptedPayload,
-                    student_id: 1
+                const response = await api.post('/attendance/scan', { 
+                    session_qr_code: qrCodeString 
                 });
-
-                this.lastScanData = response.data.data;
-                this.scanStatus = 'success';
-            }
-            catch (error) {
-                this.scanError = error.response?.data?.message || "Failed to scan QR code.";
-                this.scanStatus = "error";
+                
+                this.lastScan = {
+                    success: true,
+                    status: response.data.status,
+                    timestamp: response.data.timestamp,
+                    message: response.data.message || 'Scan successful!'
+                };
+                
+                return this.lastScan;
+            } catch (error) {
+                this.lastScan = {
+                    success: false,
+                    message: error.response?.data?.message || 'Invalid or expired QR code.'
+                };
+                throw this.lastScan;
+            } finally {
+                this.isProcessing = false;
             }
         }
     }

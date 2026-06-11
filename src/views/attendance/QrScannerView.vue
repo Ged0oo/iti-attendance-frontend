@@ -1,112 +1,118 @@
 <template>
-  <div class="h-screen bg-black flex flex-col relative max-w-[390px] mx-auto overflow-hidden">
-    <div class="relative h-[65%] w-full bg-on-background overflow-hidden flex items-center justify-center">
+  <main class="flex-1 flex flex-col min-w-0 p-margin-desktop bg-canvas min-h-screen">
+    <div class="max-w-md mx-auto w-full">
       
-      <div id="qr-reader" class="w-full h-full object-cover"></div>
-      
-      <div v-if="attendanceStore.scanStatus !== 'success'" class="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none">
-        <p class="font-body-sm text-surface mb-6 bg-black/50 px-4 py-2 rounded-full backdrop-blur-sm">
-          Align QR code within the frame
-        </p>
-        <div class="relative w-64 h-64">
-          <div class="scanner-bracket bracket-tl"></div>
-          <div class="scanner-bracket bracket-tr"></div>
-          <div class="scanner-bracket bracket-bl"></div>
-          <div class="scanner-bracket bracket-br"></div>
-          <div class="absolute left-0 right-0 h-0.5 bg-primary-container shadow-[0_0_8px_rgba(139,26,26,0.8)] animate-scan"></div>
+      <header class="mb-6 text-center">
+        <h1 class="font-h2 text-primary font-bold">Scan Attendance</h1>
+        <p class="font-body-sm text-on-surface-variant mt-2">Point your camera at the instructor's screen to check in or out.</p>
+      </header>
+
+      <div class="bg-surface rounded-3xl shadow-elevated overflow-hidden border border-outline-variant/30 relative">
+        
+        <div v-if="attendanceStore.isProcessing" class="absolute inset-0 bg-surface/80 z-20 flex flex-col items-center justify-center backdrop-blur-sm">
+          <span class="material-symbols-outlined animate-spin text-primary text-[48px]">progress_activity</span>
+          <p class="font-label text-primary mt-4 animate-pulse">Verifying...</p>
         </div>
-      </div>
-    </div>
 
-    <div class="h-[35%] w-full bg-surface rounded-t-3xl -mt-6 relative z-20 px-6 py-8 shadow-elevated flex flex-col items-center justify-center">
-      
-      <div v-if="attendanceStore.scanStatus === 'idle' || attendanceStore.scanStatus === 'scanning'" class="text-center">
-        <h3 class="font-h3 text-on-surface">Ready to Scan</h3>
-        <p class="font-body-sm text-on-surface-variant mt-1">Point your camera at the instructor's screen.</p>
-      </div>
-
-      <div v-else-if="attendanceStore.scanStatus === 'success'" class="w-full max-w-sm bg-success-mist border border-success/20 rounded-xl p-5 shadow-sm flex items-center gap-4 relative overflow-hidden">
-        <div class="relative">
-          <div class="w-12 h-12 bg-success rounded-full flex items-center justify-center relative z-10 shadow-md">
-            <span class="material-symbols-outlined text-surface">check</span>
+        <div class="aspect-[3/4] bg-black relative">
+          <qrcode-stream 
+            v-if="!showSuccess"
+            @detect="onDetect" 
+            @error="onError"
+            class="absolute inset-0 object-cover"
+          ></qrcode-stream>
+          
+          <div v-if="!showSuccess" class="absolute inset-0 pointer-events-none border-[40px] border-black/40 flex items-center justify-center">
+            <div class="w-full h-full border-2 border-dashed border-white/70 rounded-xl relative">
+              <div class="absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 border-primary rounded-tl-lg"></div>
+              <div class="absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 border-primary rounded-tr-lg"></div>
+              <div class="absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 border-primary rounded-bl-lg"></div>
+              <div class="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-primary rounded-br-lg"></div>
+            </div>
           </div>
         </div>
-        <div>
-          <h3 class="font-h3 text-success">Checked in at {{ attendanceStore.lastScanData?.timestamp }}</h3>
-          <p class="font-body-sm text-on-surface-variant mt-1">Status: {{ attendanceStore.lastScanData?.status }}</p>
-        </div>
       </div>
 
-      <div v-else-if="attendanceStore.scanStatus === 'error'" class="w-full max-w-sm bg-danger-mist border border-danger/20 rounded-xl p-5 shadow-sm flex items-center gap-4">
-         <div class="w-12 h-12 bg-danger rounded-full flex items-center justify-center shadow-md">
-            <span class="material-symbols-outlined text-surface">error</span>
-          </div>
-        <div>
-          <h3 class="font-h3 text-danger">Scan Failed</h3>
-          <p class="font-body-sm text-on-surface-variant mt-1">{{ attendanceStore.scanError }}</p>
+      <div class="mt-6">
+        <div v-if="showSuccess" class="bg-success-mist border border-success/20 rounded-xl p-6 text-center animate-fade-in">
+          <span class="material-symbols-outlined text-success text-[48px] mb-2">check_circle</span>
+          <h3 class="font-h3 text-success">
+            {{ attendanceStore.lastScan?.status === 'left' ? 'Checked Out' : 'Checked In' }}
+          </h3>
+          <p class="font-body-sm text-on-surface-variant mt-1">{{ attendanceStore.lastScan?.message }}</p>
+          <button @click="resetScanner" class="mt-4 px-6 py-2 bg-success text-white rounded-lg font-label w-full hover:bg-success/90 transition-colors">
+            Scan Another
+          </button>
         </div>
-        <button @click="resetScanner" class="absolute top-2 right-2 text-on-surface-variant hover:text-danger">
-            <span class="material-symbols-outlined text-sm">refresh</span>
-        </button>
+
+        <div v-if="errorMessage" class="bg-danger-mist border border-danger/20 rounded-xl p-4 flex items-start gap-3 animate-fade-in">
+          <span class="material-symbols-outlined text-danger shrink-0">error</span>
+          <div>
+            <h4 class="font-label text-danger">Scan Failed</h4>
+            <p class="font-body-sm text-danger/80 mt-1">{{ errorMessage }}</p>
+          </div>
+        </div>
       </div>
 
     </div>
-  </div>
+  </main>
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { ref } from 'vue';
+import { QrcodeStream } from 'vue-qrcode-reader';
 import { useAttendanceStore } from '@/stores/attendance';
 
 const attendanceStore = useAttendanceStore();
-let html5QrcodeScanner = null;
 
-onMounted(() => {
-  // Initialize the scanner
-  html5QrcodeScanner = new Html5QrcodeScanner(
-    "qr-reader",
-    { fps: 10, qrbox: { width: 250, height: 250 } },
-    /* verbose= */ false
-  );
+const showSuccess = ref(false);
+const errorMessage = ref('');
+
+// Triggered when a QR code is found in the video feed
+const onDetect = async (detectedCodes) => {
+  // vue-qrcode-reader returns an array of detected codes
+  const rawValue = detectedCodes[0]?.rawValue;
   
-  html5QrcodeScanner.render(onScanSuccess, onScanFailure);
-});
+  if (!rawValue || attendanceStore.isProcessing) return;
 
-onUnmounted(() => {
-  if (html5QrcodeScanner) {
-    html5QrcodeScanner.clear().catch(error => console.error("Failed to clear scanner", error));
+  errorMessage.value = '';
+  
+  try {
+    await attendanceStore.submitScan(rawValue);
+    showSuccess.value = true;
+    
+    // Optional: Use navigator.vibrate for tactile feedback on mobile
+    if (navigator.vibrate) navigator.vibrate(200);
+    
+  } catch (error) {
+    errorMessage.value = attendanceStore.lastScan?.message || "An unknown error occurred.";
   }
-});
+};
 
-async function onScanSuccess(decodedText) {
-  // Prevent multiple scans while processing
-  if (attendanceStore.scanStatus === 'scanning' || attendanceStore.scanStatus === 'success') return;
-  
-  // Pause the scanner visually while processing
-  html5QrcodeScanner.pause();
-  
-  await attendanceStore.scanQrCode(decodedText);
-}
+// Handle camera permission errors
+const onError = (err) => {
+  if (err.name === 'NotAllowedError') {
+    errorMessage.value = "Camera permission denied. Please allow access to scan.";
+  } else if (err.name === 'NotFoundError') {
+    errorMessage.value = "No camera found on this device.";
+  } else {
+    errorMessage.value = "Camera error: " + err.message;
+  }
+};
 
-function onScanFailure(error) {
-  // html5-qrcode throws errors constantly when it doesn't see a QR code. 
-  // We ignore these to prevent console spam.
-}
-
-function resetScanner() {
-    attendanceStore.scanStatus = 'idle';
-    if(html5QrcodeScanner) html5QrcodeScanner.resume();
-}
+const resetScanner = () => {
+  showSuccess.value = false;
+  errorMessage.value = '';
+  attendanceStore.lastScan = null;
+};
 </script>
 
 <style scoped>
-.scanner-bracket { position: absolute; width: 40px; height: 40px; border-color: #8B1A1A; }
-.bracket-tl { top: 0; left: 0; border-top: 4px solid; border-left: 4px solid; border-top-left-radius: 8px; }
-.bracket-tr { top: 0; right: 0; border-top: 4px solid; border-right: 4px solid; border-top-right-radius: 8px; }
-.bracket-bl { bottom: 0; left: 0; border-bottom: 4px solid; border-left: 4px solid; border-bottom-left-radius: 8px; }
-.bracket-br { bottom: 0; right: 0; border-bottom: 4px solid; border-right: 4px solid; border-bottom-right-radius: 8px; }
-
-@keyframes scan { 0% { top: 5%; } 50% { top: 95%; } 100% { top: 5%; } }
-.animate-scan { animation: scan 2s ease-in-out infinite; }
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 </style>
