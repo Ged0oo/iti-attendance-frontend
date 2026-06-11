@@ -23,15 +23,16 @@ export const useLedgerStore = defineStore('ledger', {
             this.loading = true;
             try {
                 const authStore = useAuthStore();
-                const userId = authStore.user?.id; 
-                if (!userId) throw new Error("No user ID found.");
+                const studentId = authStore.user?.student_id;
+                if(!studentId) {
+                    throw new Error("No student ID found.");
+                }
 
-                const response = await api.get(`/students/${userId}/ledger`);
-                
-                const ledgerData = response.data.data;
-                this.balance = ledgerData.balance;
-                
-                this.history = ledgerData.entries || [];
+                const balanceResponse = await api.get(`/students/${studentId}/ledger`);
+                this.balance = balanceResponse.data.data?.balance || balanceResponse.data.balance;
+
+                const entriesResponse = await api.get(`/students/${studentId}/ledger/entries`);
+                this.history = entriesResponse.data.data || [];
             } catch (error) {
                 console.error("Failed to fetch live ledger data:", error);
             } finally {

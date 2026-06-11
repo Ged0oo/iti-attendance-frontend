@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import attendanceRoutes from './attendance.routes';
+import excuseRoutes from './excuse.routes'
+import StudentDashboard from '@/views/dashboard/StudentDashboard.vue';
 
 const router = createRouter({
     history: createWebHistory(),
@@ -10,7 +12,25 @@ const router = createRouter({
             name: 'login',
             component: () => import('@/views/auth/LoginView.vue')
         },
+        {
+            path: '/',
+            name: 'home',
+            component: StudentDashboard,
+            meta: { requiresAuth: true },
+            beforeEnter: (to, from, next) => {
+                const authStore = useAuthStore();
+                if (authStore.isStudent) {
+                    next();
+                } else if (authStore.isManager || authStore.isInstructor) {
+                    // For now, redirect staff somewhere else until their dashboards are built
+                    next('/excuses/review');
+                } else {
+                    next('/login');
+                }
+            }
+        },
         ...attendanceRoutes,
+        ...excuseRoutes
     ]
 });
 
