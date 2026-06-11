@@ -92,7 +92,7 @@ export const useGradingStore = defineStore('grading', {
                 return await callback();
             } catch (error) {
                 this.error = errorMessage(error);
-                throw error;
+                return null;
             } finally {
                 this.loading = false;
             }
@@ -150,7 +150,7 @@ export const useGradingStore = defineStore('grading', {
                 return saved;
             } catch (error) {
                 this.error = errorMessage(error, 'Grade save failed.');
-                throw error;
+                return null;
             } finally {
                 this.saving = false;
             }
@@ -175,7 +175,7 @@ export const useGradingStore = defineStore('grading', {
                 return saved;
             } catch (error) {
                 this.error = errorMessage(error, 'Override failed.');
-                throw error;
+                return null;
             } finally {
                 this.saving = false;
             }

@@ -55,12 +55,15 @@ async function loadGrades() {
 }
 
 async function saveExisting(grade) {
-    await grading.saveRawGrade({
+    const saved = await grading.saveRawGrade({
         id: grade.id,
         lab_group_id: grade.lab_group_id,
         raw_score: rawDrafts.value[grade.id],
     });
-    notice.value = 'Raw score saved.';
+
+    if (saved) {
+        notice.value = 'Raw score saved.';
+    }
 }
 
 async function saveNewGrade() {
@@ -69,15 +72,18 @@ async function saveNewGrade() {
         return;
     }
 
-    await grading.saveRawGrade({
+    const saved = await grading.saveRawGrade({
         student_id: Number(newGrade.student_id),
         grade_component_id: Number(filters.grade_component_id),
         lab_group_id: selectedLabGroupId.value ? Number(selectedLabGroupId.value) : null,
         raw_score: newGrade.raw_score,
     });
-    newGrade.student_id = '';
-    newGrade.raw_score = '';
-    notice.value = 'Raw score submitted.';
+
+    if (saved) {
+        newGrade.student_id = '';
+        newGrade.raw_score = '';
+        notice.value = 'Raw score submitted.';
+    }
 }
 
 function openOverride(grade) {
@@ -98,12 +104,15 @@ async function submitOverride() {
         return;
     }
 
-    await grading.overrideGrade(overrideForm.grade.id, {
+    const saved = await grading.overrideGrade(overrideForm.grade.id, {
         override_value: overrideForm.override_value,
         override_note: overrideForm.override_note,
     });
-    notice.value = 'Override saved with audit note.';
-    closeOverride();
+
+    if (saved) {
+        notice.value = 'Override saved.';
+        closeOverride();
+    }
 }
 
 function studentLabel(grade) {
