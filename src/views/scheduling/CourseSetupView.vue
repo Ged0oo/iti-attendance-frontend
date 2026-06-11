@@ -28,6 +28,8 @@ const newCourseName = ref('')
 
 const blankDraft = () => ({ name: '', type: 'lab_deliverable', weight: 10, raw_max: 100 })
 const courseTotal = (course) => course.components.reduce((sum, c) => sum + Number(c.weight), 0)
+// a cohort name can repeat across tracks, so show the track to keep them apart
+const cohortLabel = (c) => (c.track?.name ? `${c.name} — ${c.track.name}` : c.name)
 
 onMounted(async () => {
   try {
@@ -70,6 +72,7 @@ async function loadComponents(courseId) {
 async function addCourse() {
   const name = newCourseName.value.trim()
   if (!name) return
+  error.value = ''
   try {
     const course = await store.createCourse({ cohort_id: cohortId.value, name })
     courses.value.push({ ...course, components: [], draft: blankDraft() })
@@ -80,6 +83,7 @@ async function addCourse() {
 }
 
 async function removeCourse(course) {
+  error.value = ''
   try {
     await store.deleteCourse(course.id)
     courses.value = courses.value.filter((c) => c.id !== course.id)
@@ -109,6 +113,7 @@ async function addComponent(course) {
 }
 
 async function removeComponent(course, comp) {
+  error.value = ''
   try {
     await store.deleteComponent(comp.id)
     course.components = course.components.filter((c) => c.id !== comp.id)
@@ -164,7 +169,7 @@ const selectedCohortName = computed(
               @change="loadCourses"
               class="h-11 rounded-lg border border-outline-variant bg-surface px-3 font-body-md text-body-md text-on-surface focus:border-primary-container focus:ring-1 focus:ring-primary-container"
             >
-              <option v-for="c in cohorts" :key="c.id" :value="c.id">{{ c.name }}</option>
+              <option v-for="c in cohorts" :key="c.id" :value="c.id">{{ cohortLabel(c) }}</option>
             </select>
           </label>
         </div>
