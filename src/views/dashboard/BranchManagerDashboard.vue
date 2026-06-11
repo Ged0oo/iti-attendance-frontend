@@ -7,6 +7,7 @@ const store = useCohortStore()
 
 const atRisk = ref([])
 const billingRecords = ref([])
+const attendanceRate = ref(null)
 
 function num(v) {
   return Number(v || 0)
@@ -25,7 +26,7 @@ const pendingBilling = computed(() =>
 const kpis = computed(() => [
   { label: 'Active Tracks', value: String(activeTracks.value), icon: 'layers', tone: 'primary', path: 'M0 35 Q 15 10, 30 25 T 60 15 T 100 5' },
   { label: 'At-Risk Students', value: String(atRisk.value.length), icon: 'warning', tone: 'warning', mono: true, valueTone: atRisk.value.length ? 'warning' : null, path: 'M0 30 Q 20 35, 40 20 T 70 10 T 100 25' },
-  { label: 'Avg Attendance Rate', value: '—', icon: 'trending_up', tone: 'success', note: 'Attendance module', path: 'M0 38 L 20 30 L 40 32 L 60 20 L 80 15 L 100 5' },
+  { label: 'Avg Attendance Rate', value: attendanceRate.value === null ? '—' : attendanceRate.value + '%', icon: 'trending_up', tone: 'success', path: 'M0 38 L 20 30 L 40 32 L 60 20 L 80 15 L 100 5' },
   { label: 'Pending Billing (EGP)', value: fmt(pendingBilling.value), icon: 'account_balance_wallet', tone: 'warning', mono: true, valueTone: 'warning', path: 'M0 10 Q 25 5, 50 25 T 75 35 T 100 15' },
 ])
 const kpiTone = {
@@ -55,6 +56,10 @@ onMounted(async () => {
   } catch (e) { /* ignore */ }
   try {
     billingRecords.value = await store.fetchBilling()
+  } catch (e) { /* ignore */ }
+  try {
+    const rate = await store.fetchAttendanceRate()
+    attendanceRate.value = rate.attendance_rate
   } catch (e) { /* ignore */ }
 })
 </script>
