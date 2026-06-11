@@ -27,6 +27,7 @@ const error = ref('')
 const busy = ref(false)
 const newCourseName = ref('')
 const confirmState = ref({ open: false, title: '', message: '', confirmLabel: 'Delete', action: null })
+let tempSeq = 0 // ids for optimistic rows until the server returns the real one
 
 const blankDraft = () => ({ name: '', type: 'lab_deliverable', weight: 10, raw_max: 100 })
 const courseTotal = (course) => course.components.reduce((sum, c) => sum + Number(c.weight), 0)
@@ -75,11 +76,16 @@ async function addCourse() {
   const name = newCourseName.value.trim()
   if (!name) return
   error.value = ''
+  // show the card straight away, then swap in the saved row once it returns
+  const temp = { id: `temp-${tempSeq++}`, name, components: [], draft: blankDraft() }
+  courses.value.push(temp)
+  newCourseName.value = ''
   try {
     const course = await store.createCourse({ cohort_id: cohortId.value, name })
-    courses.value.push({ ...course, components: [], draft: blankDraft() })
-    newCourseName.value = ''
+    const i = courses.value.findIndex((c) => c.id === temp.id)
+    if (i !== -1) courses.value[i] = { ...course, components: [], draft: blankDraft() }
   } catch (e) {
+    courses.value = courses.value.filter((c) => c.id !== temp.id)
     error.value = store.error || 'Could not add the course.'
   }
 }
@@ -111,18 +117,29 @@ async function addComponent(course) {
   error.value = ''
   const d = course.draft
   if (!d.name.trim()) return
+  const weight = Number(d.weight)
+  // catch the over-100 case here so we skip a doomed round trip
+  const projected = courseTotal(course) + weight
+  if (projected > 100) {
+    error.value = `These weights would total ${projected}%. Keep each course within 100%.`
+    return
+  }
+  const temp = { id: `temp-${tempSeq++}`, name: d.name.trim(), type: d.type, weight, raw_max: Number(d.raw_max) }
+  course.components.push(temp)
+  course.draft = blankDraft()
   try {
     const comp = await store.createComponent({
       course_id: course.id,
-      name: d.name.trim(),
-      type: d.type,
-      weight: Number(d.weight),
-      raw_max: Number(d.raw_max),
+      name: temp.name,
+      type: temp.type,
+      weight,
+      raw_max: temp.raw_max,
     })
-    course.components.push(comp)
-    course.draft = blankDraft()
+    const i = course.components.findIndex((c) => c.id === temp.id)
+    if (i !== -1) course.components[i] = comp
   } catch (e) {
-    // backend rejects when the weights would pass 100
+    // backend still has the final say (e.g. another tab pushed it over 100)
+    course.components = course.components.filter((c) => c.id !== temp.id)
     error.value = store.error || 'Could not add the component.'
   }
 }
