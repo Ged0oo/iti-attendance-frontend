@@ -7,6 +7,7 @@ import attendanceRoutes from './attendance.routes.js'
 import gradingRoutes from './grading.routes.js'
 import excuseRoutes from './excuse.routes.js'
 
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -17,6 +18,7 @@ const router = createRouter({
     ...attendanceRoutes,
     ...gradingRoutes,
     ...excuseRoutes,
+
   ],
 })
 
