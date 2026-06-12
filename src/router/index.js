@@ -11,6 +11,14 @@ import userRoutes from './user.routes.js'
 
 
 
+// where to send a signed-in user who lands on a page their role cannot open
+const HOME_BY_ROLE = {
+  branch_manager: 'dashboard',
+  track_admin: 'dashboard',
+  instructor: 'dashboard.instructor',
+  student: 'dashboard.student',
+}
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -35,8 +43,11 @@ router.beforeEach((to, _from) => {
     return { name: 'login' }
   }
 
+  // signed in but not allowed here: send them to their own dashboard, not the login page
   if (to.meta.roles && !to.meta.roles.includes(auth.userRole)) {
-    return { name: 'login' }
+    if (!auth.isAuthenticated) return { name: 'login' }
+    const home = HOME_BY_ROLE[auth.userRole]
+    return home && home !== to.name ? { name: home } : { name: 'login' }
   }
 
   return true
