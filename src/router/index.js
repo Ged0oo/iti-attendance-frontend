@@ -6,6 +6,7 @@ import schedulingRoutes from './scheduling.routes.js'
 import attendanceRoutes from './attendance.routes.js'
 import gradingRoutes from './grading.routes.js'
 import excuseRoutes from './excuse.routes.js'
+import dashboardRoutes from './dashboard.routes.js'
 
 
 const router = createRouter({
@@ -13,6 +14,7 @@ const router = createRouter({
   routes: [
     { path: '/', redirect: '/login' },
     ...authRoutes,
+    ...dashboardRoutes,
     ...cohortRoutes,
     ...schedulingRoutes,
     ...attendanceRoutes,
@@ -22,18 +24,18 @@ const router = createRouter({
   ],
 })
 
-router.beforeEach((to, _from, next) => {
+router.beforeEach((to, _from) => {
   const auth = useAuthStore()
 
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
-    return next({ name: 'login' })
+    return { name: 'login' }
   }
 
   if (to.meta.roles && !to.meta.roles.includes(auth.userRole)) {
-    return next({ name: 'login' })
+    return { name: 'login' }
   }
 
-  next()
+  return true
 })
 
 export default router
