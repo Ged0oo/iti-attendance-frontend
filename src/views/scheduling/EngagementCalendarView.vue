@@ -45,8 +45,9 @@ const selected = ref(null)
 const sessions = ref([])
 const loadingSessions = ref(false)
 
-// schedule modal
+// schedule modal (also reused for editing)
 const scheduleOpen = ref(false)
+const editingId = ref(null) // engagement id when the modal is in edit mode
 const blankSchedule = () => ({ course_id: '', instructor_id: '', type: 'lecture', date_range_start: '', date_range_end: '', scheduled_hours: 10 })
 const scheduleForm = ref(blankSchedule())
 
@@ -122,6 +123,31 @@ function closeDrawer() {
   sessions.value = []
 }
 
+function openSchedule() {
+  editingId.value = null
+  scheduleForm.value = blankSchedule()
+  scheduleOpen.value = true
+}
+
+function openEdit(engagement) {
+  editingId.value = engagement.id
+  scheduleForm.value = {
+    course_id: engagement.course_id || '',
+    instructor_id: engagement.instructor_id || '',
+    type: engagement.type,
+    date_range_start: (engagement.date_range_start || '').slice(0, 10),
+    date_range_end: (engagement.date_range_end || '').slice(0, 10),
+    scheduled_hours: engagement.scheduled_hours,
+  }
+  scheduleOpen.value = true
+}
+
+function closeSchedule() {
+  scheduleOpen.value = false
+  editingId.value = null
+  scheduleForm.value = blankSchedule()
+}
+
 async function submitSchedule() {
   const f = scheduleForm.value
   if (!f.date_range_start || !f.date_range_end) {
@@ -132,19 +158,25 @@ async function submitSchedule() {
   const payload = {
     cohort_id: cohortId.value,
     type: f.type,
+    course_id: f.course_id || null,
     instructor_id: f.instructor_id || null,
     date_range_start: f.date_range_start,
     date_range_end: f.date_range_end,
     scheduled_hours: Number(f.scheduled_hours),
   }
-  if (f.course_id) payload.course_id = f.course_id
   try {
-    const created = await store.createEngagement(payload)
-    engagements.value.unshift(created)
-    scheduleOpen.value = false
-    scheduleForm.value = blankSchedule()
+    if (editingId.value) {
+      const updated = await store.updateEngagement(editingId.value, payload)
+      const i = engagements.value.findIndex((e) => e.id === editingId.value)
+      if (i !== -1) engagements.value[i] = updated
+      if (selected.value?.id === editingId.value) selected.value = updated
+    } else {
+      const created = await store.createEngagement(payload)
+      engagements.value.unshift(created)
+    }
+    closeSchedule()
   } catch (e) {
-    error.value = store.error || 'Could not schedule the engagement.'
+    error.value = store.error || (editingId.value ? 'Could not update the engagement.' : 'Could not schedule the engagement.')
   }
 }
 
@@ -235,7 +267,7 @@ function runConfirm() {
         </div>
         <button
           class="h-11 px-5 rounded-lg bg-primary-container text-white font-label text-label flex items-center gap-2 hover:bg-primary transition-colors shadow-elevated"
-          @click="scheduleOpen = true"
+          @click="openSchedule()"
         >
           <span class="material-symbols-outlined text-[18px]">add</span> Schedule Engagement
         </button>
@@ -287,9 +319,9 @@ function runConfirm() {
 
     <!-- Schedule modal -->
     <Teleport to="body">
-      <div v-if="scheduleOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @click.self="scheduleOpen = false">
+      <div v-if="scheduleOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @click.self="closeSchedule()">
         <div class="w-full max-w-lg rounded-xl bg-surface p-6 shadow-[0_20px_60px_rgba(0,0,0,0.18)]">
-          <h3 class="font-h2 text-h2 text-on-surface mb-5">Schedule Engagement</h3>
+          <h3 class="font-h2 text-h2 text-on-surface mb-5">{{ editingId ? 'Edit Engagement' : 'Schedule Engagement' }}</h3>
           <form class="grid grid-cols-2 gap-4" @submit.prevent="submitSchedule">
             <label class="flex flex-col gap-1 col-span-2">
               <span class="font-label text-label text-on-surface-variant">Type</span>
@@ -324,8 +356,8 @@ function runConfirm() {
               <input v-model.number="scheduleForm.scheduled_hours" type="number" min="0" class="h-11 w-40 rounded-lg border border-outline-variant bg-surface px-3 font-mono text-mono focus:border-primary-container focus:ring-1 focus:ring-primary-container" />
             </label>
             <div class="col-span-2 flex justify-end gap-3 mt-2">
-              <button type="button" class="h-11 px-5 rounded-lg font-label text-label text-on-surface-variant hover:bg-surface-sunken" @click="scheduleOpen = false">Cancel</button>
-              <button type="submit" class="h-11 px-5 rounded-lg bg-primary-container text-white font-label text-label hover:bg-primary transition-colors">Schedule</button>
+              <button type="button" class="h-11 px-5 rounded-lg font-label text-label text-on-surface-variant hover:bg-surface-sunken" @click="closeSchedule()">Cancel</button>
+              <button type="submit" class="h-11 px-5 rounded-lg bg-primary-container text-white font-label text-label hover:bg-primary transition-colors">{{ editingId ? 'Save changes' : 'Schedule' }}</button>
             </div>
           </form>
         </div>
@@ -398,7 +430,14 @@ function runConfirm() {
             </div>
           </div>
 
-          <div class="p-6 border-t border-surface-variant">
+          <div class="p-6 border-t border-surface-variant flex flex-col gap-3">
+            <button
+              v-if="selected.status !== 'cancelled'"
+              class="w-full h-11 rounded-lg border-[1.5px] border-primary-container text-primary-container font-label text-label hover:bg-primary-mist transition-colors"
+              @click="openEdit(selected)"
+            >
+              Edit details
+            </button>
             <button
               v-if="selected.status !== 'cancelled'"
               class="w-full h-11 rounded-lg border-[1.5px] border-danger text-danger font-label text-label hover:bg-danger-mist transition-colors"
