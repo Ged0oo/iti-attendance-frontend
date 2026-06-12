@@ -6,6 +6,10 @@ import schedulingRoutes from './scheduling.routes.js'
 import attendanceRoutes from './attendance.routes.js'
 import gradingRoutes from './grading.routes.js'
 import excuseRoutes from './excuse.routes.js'
+import dashboardRoutes from './dashboard.routes.js'
+import userRoutes from './user.routes.js'
+
+
 
 // where to send a signed-in user who lands on a page their role cannot open
 const HOME_BY_ROLE = {
@@ -20,29 +24,33 @@ const router = createRouter({
   routes: [
     { path: '/', redirect: '/login' },
     ...authRoutes,
+    ...dashboardRoutes,
     ...cohortRoutes,
     ...schedulingRoutes,
     ...attendanceRoutes,
     ...gradingRoutes,
     ...excuseRoutes,
+    ...userRoutes,
+
+
   ],
 })
 
-router.beforeEach((to, _from, next) => {
+router.beforeEach((to, _from) => {
   const auth = useAuthStore()
 
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
-    return next({ name: 'login' })
+    return { name: 'login' }
   }
 
   // signed in but not allowed here: send them to their own dashboard, not the login page
   if (to.meta.roles && !to.meta.roles.includes(auth.userRole)) {
-    if (!auth.isAuthenticated) return next({ name: 'login' })
+    if (!auth.isAuthenticated) return { name: 'login' }
     const home = HOME_BY_ROLE[auth.userRole]
-    return next(home && home !== to.name ? { name: home } : { name: 'login' })
+    return home && home !== to.name ? { name: home } : { name: 'login' }
   }
 
-  next()
+  return true
 })
 
 export default router

@@ -1,42 +1,53 @@
 import { defineStore } from 'pinia'
-import api from '../services/api'
+import axios from 'axios'
 
 export const useAuthStore = defineStore('auth', {
-  state: () => ({
-    user: JSON.parse(localStorage.getItem('user')),
-    token: localStorage.getItem('auth_token'),
-  }),
-
-  getters: {
-    isAuthenticated: (state) => !!state.token,
-    userRole: (state) => state.user?.role || null,
-  },
-
-  actions: {
-    async login(email, password) {
-      const { data } = await api.post('/api/login', { email, password })
-      this.token = data.token
-      this.user = data.user
-      localStorage.setItem('auth_token', data.token)
-      localStorage.setItem('user', JSON.stringify(data.user))
+    state: () => ({
+        user: JSON.parse(localStorage.getItem('user')) || null,
+        token: localStorage.getItem('token') || null,
+        loading: false,
+        error: null
+    }),
+    getters: {
+        isAuthenticated: (state) => !!state.token,
+        userRole: (state) => state.user?.role || null,
+        isInstructor: (state) => state.user?.role === 'instructor',
+        isStudent: (state) => state.user?.role === 'student',
+        isManager: (state) => state.user?.role === 'manager'
     },
+    actions: {
+        async login(email, password) {
+            this.loading = true;
+            this.error = null;
 
-    async fetchUser() {
-      const { data } = await api.get('/api/me')
-      this.user = data
-      localStorage.setItem('user', JSON.stringify(data))
-    },
+            try {
+                const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/login`, {
+                    email,
+                    password
+                }, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
 
-    async logout() {
-      try {
-        await api.post('/api/logout')
-      } catch (e) {
-      
-      }
-      this.token = null
-      this.user = null
-      localStorage.removeItem('auth_token')
-      localStorage.removeItem('user')
-    },
-  },
-})
+                this.user = response.data.user;
+                this.token = response.data.token;
+
+                localStorage.setItem('token', this.token);
+                localStorage.setItem('user', JSON.stringify(this.user));
+
+            } catch (error) {
+                this.error = error.response?.data?.message || 'Login failed';
+                throw error;
+            } finally {
+                this.loading = false;
+            }
+        },
+        logout() {
+            this.user = null;
+            this.token = null;
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+        }
+    }
+});
