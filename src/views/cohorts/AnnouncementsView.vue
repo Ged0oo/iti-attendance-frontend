@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import MainLayout from '../../components/layout/MainLayout.vue'
 import { useAuth } from '../../composables/useAuth'
 import { useCohortStore } from '../../stores/cohort'
+import { initials } from '../../composables/useUtils'
 
 const route = useRoute()
 const cohortId = route.params.id
@@ -36,10 +37,6 @@ const roleStyles = {
 function badge(role) {
   return roleStyles[role] || roleStyles.student
 }
-function initials(name) {
-  return (name || '?').split(' ').map((w) => w.charAt(0)).join('').slice(0, 2).toUpperCase()
-}
-
 async function submitPost() {
   if (!form.value.title || !form.value.body) return
   const created = await store.createAnnouncement({

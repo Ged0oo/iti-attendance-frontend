@@ -146,7 +146,7 @@ onMounted(async () => {
 
       <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-8">
         <div class="bg-surface rounded-xl shadow-sm overflow-hidden flex flex-col">
-          <div class="p-5 border-b border-outline-variant flex justify-between items-center bg-danger">
+          <div class="p-5 border-b border-outline-variant flex justify-between items-center bg-primary">
             <h2 class="font-h3 text-h3 text-white flex items-center gap-2">
               <span class="material-symbols-outlined">warning</span> At-Risk Students
             </h2>

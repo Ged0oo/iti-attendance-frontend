@@ -10,10 +10,7 @@ export const useAuthStore = defineStore('auth', {
     }),
     getters: {
         isAuthenticated: (state) => !!state.token,
-        userRole: (state) => state.user?.role || null,
-        isInstructor: (state) => state.user?.role === 'instructor',
-        isStudent: (state) => state.user?.role === 'student',
-        isManager: (state) => state.user?.role === 'manager'
+        userRole: (state) => state.user?.role || null
     },
     actions: {
         async login(email, password) {
@@ -21,7 +18,7 @@ export const useAuthStore = defineStore('auth', {
             this.error = null;
 
             try {
-                const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/login`, {
+                const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/login`, {
                     email,
                     password
                 }, {
