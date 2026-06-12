@@ -7,6 +7,8 @@ import attendanceRoutes from './attendance.routes.js'
 import gradingRoutes from './grading.routes.js'
 import excuseRoutes from './excuse.routes.js'
 import dashboardRoutes from './dashboard.routes.js'
+import userRoutes from './user.routes.js'
+
 
 
 const router = createRouter({
@@ -20,6 +22,8 @@ const router = createRouter({
     ...attendanceRoutes,
     ...gradingRoutes,
     ...excuseRoutes,
+    ...userRoutes,
+
 
   ],
 })
