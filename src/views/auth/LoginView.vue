@@ -250,10 +250,10 @@ EmU1UvVIEEghSirdlkhEgSLLAjLuWAEHW8tYtGQGCJAvMuGsJEGQtb92SEegtSLKwjLueAEHWM9cxEQG
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, reactive } from "vue";
 import { useRouter } from "vue-router";
-import { useAuth } from "@/composables/useAuth";
+import { useAuth } from "@/composables/useAuth.js";
 
 const router = useRouter();
 const { login, loading, error } = useAuth();
@@ -269,8 +269,8 @@ const handleLogin = async () => {
   try {
     await login(form.email, form.password);
     router.push("/dashboard");
-  } catch (e) {
-    // error handled by useAuth
+  } catch {
+    console.error("Login failed");
   }
 };
 </script>
