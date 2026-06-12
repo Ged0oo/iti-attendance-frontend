@@ -62,8 +62,7 @@ function stepState(key) {
 
 onMounted(async () => {
   try {
-    const { data } = await api.get('/api/cohorts')
-    cohorts.value = data.data ?? data ?? []
+    cohorts.value = await store.fetchCohorts()
     if (cohorts.value.length) cohortId.value = cohorts.value[0].id
   } catch (e) {
     error.value = 'Could not load cohorts.'

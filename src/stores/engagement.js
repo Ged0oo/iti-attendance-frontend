@@ -32,6 +32,22 @@ export const useEngagementStore = defineStore('engagement', {
       }
     },
 
+    // cohorts are paginated, so pull every page for the picker
+    fetchCohorts() {
+      return this._run(async () => {
+        const out = []
+        let page = 1
+        let last = 1
+        do {
+          const { data } = await api.get('/api/cohorts', { params: { page } })
+          out.push(...(data.data ?? data ?? []))
+          last = data.last_page ?? data.meta?.last_page ?? page
+          page += 1
+        } while (page <= last)
+        return out
+      })
+    },
+
     // --- Courses ---
     fetchCourses(cohortId) {
       return this._run(async () => {
