@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import MainLayout from '../../components/layout/MainLayout.vue'
 import { useCohortStore } from '../../stores/cohort'
 import { useAuthStore } from '../../stores/auth'
-import { statusColors, statusIcons } from '../../composables/useUtils'
+import { statusColors, statusIcons, fmtDate } from '../../composables/useUtils'
 
 const router = useRouter()
 const store = useCohortStore()
@@ -34,7 +34,10 @@ async function createCohort() {
     const created = cohort?.data ?? cohort
     router.push({ name: 'cohort-config', params: { id: created.id } })
   } catch (e) {
-    createError.value = e.response?.data?.message || 'Failed to create cohort'
+    const errors = e.response?.data?.errors
+    createError.value = errors
+      ? Object.values(errors).flat().join(' ')
+      : e.response?.data?.message || 'Failed to create cohort'
   }
 }
 
@@ -146,7 +149,7 @@ onMounted(async () => {
             </div>
             <div class="flex items-center gap-2">
               <span class="material-symbols-outlined text-[16px]">calendar_today</span>
-              <span class="font-mono text-mono">{{ cohort.start_date }} — {{ cohort.end_date }}</span>
+              <span class="font-mono text-mono">{{ fmtDate(cohort.start_date) }} — {{ fmtDate(cohort.end_date) }}</span>
             </div>
             <div v-if="cohort.creator" class="flex items-center gap-2">
               <span class="material-symbols-outlined text-[16px]">person</span>

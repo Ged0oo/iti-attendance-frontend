@@ -2,6 +2,10 @@ export function initials(name) {
   return (name || '?').split(' ').map((w) => w.charAt(0)).join('').slice(0, 2).toUpperCase()
 }
 
+export function fmtDate(d) {
+  return d ? String(d).slice(0, 10) : '—'
+}
+
 export const statusColors = {
   open: 'bg-info-mist text-info border-info/20',
   configuring: 'bg-warning-mist text-warning border-warning/20',

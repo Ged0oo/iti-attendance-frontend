@@ -107,6 +107,8 @@ async function transitionStatus() {
     cohort.value = data
   } catch (e) {
     transitionError.value = e.response?.data?.message || 'Transition failed'
+    await store.fetchCohort(cohortId)
+    if (store.currentCohort) cohort.value = store.currentCohort
   }
 }
 
@@ -121,8 +123,8 @@ onMounted(async () => {
     }
     if (cohort.value) {
       basicForm.value.name = cohort.value.name || ''
-      basicForm.value.start_date = cohort.value.start_date || ''
-      basicForm.value.end_date = cohort.value.end_date || ''
+      basicForm.value.start_date = (cohort.value.start_date || '').slice(0, 10)
+      basicForm.value.end_date = (cohort.value.end_date || '').slice(0, 10)
     }
   } catch (e) { /* ignore */ }
   try {
