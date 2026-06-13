@@ -2,6 +2,7 @@
 import { computed, onMounted, reactive } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useGradingStore } from '../../stores/grading';
+import MainLayout from '../../components/layout/MainLayout.vue';
 
 const props = defineProps({
     studentId: {
@@ -54,6 +55,7 @@ onMounted(loadCard);
 </script>
 
 <template>
+    <MainLayout title="Grade Cards">
     <section class="mx-auto max-w-7xl space-y-6">
         <div class="flex flex-col gap-2">
             <p class="text-sm font-semibold uppercase tracking-wide text-primary-container">Student portal</p>
@@ -148,4 +150,5 @@ onMounted(loadCard);
             </div>
         </template>
     </section>
+    </MainLayout>
 </template>
