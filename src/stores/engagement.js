@@ -5,6 +5,7 @@ import api from '../services/api'
 // lab groups, engagements, sessions and the billing rollup.
 export const useEngagementStore = defineStore('engagement', {
   state: () => ({
+    cohorts: [],
     courses: [],
     gradeComponents: [],
     instructors: [],
@@ -46,8 +47,13 @@ export const useEngagementStore = defineStore('engagement', {
       return out
     },
 
-    fetchCohorts() {
-      return this._run(() => this._all('/api/cohorts'))
+    // cached: the cohort list is shared across all three screens, so only fetch once
+    fetchCohorts(force = false) {
+      if (!force && this.cohorts.length) return Promise.resolve(this.cohorts)
+      return this._run(async () => {
+        this.cohorts = await this._all('/api/cohorts')
+        return this.cohorts
+      })
     },
 
     // --- Courses ---
@@ -173,6 +179,12 @@ export const useEngagementStore = defineStore('engagement', {
         const i = this.sessions.findIndex((s) => s.id === id)
         if (i !== -1) this.sessions[i] = data.data
         return data.data
+      })
+    },
+    deleteSession(id) {
+      return this._run(async () => {
+        await api.delete(`/api/sessions/${id}`)
+        this.sessions = this.sessions.filter((s) => s.id !== id)
       })
     },
 
