@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import MainLayout from '../../components/layout/MainLayout.vue'
 import { useAuth } from '../../composables/useAuth'
 import { useCohortStore } from '../../stores/cohort'
+import { initials, statusColors } from '../../composables/useUtils'
 
 const store = useCohortStore()
 const { hasRole } = useAuth()
@@ -38,17 +39,6 @@ async function selectTrack(id) {
   } catch (e) { /* ignore */ }
 }
 
-const statusStyles = {
-  open: 'bg-info-mist text-info border-info/20',
-  configuring: 'bg-warning-mist text-warning border-warning/20',
-  delivering: 'bg-success-mist text-success border-success/20',
-  participating: 'bg-success-mist text-success border-success/20',
-  rolled_up: 'bg-surface-sunken text-on-surface-variant border-outline-variant',
-}
-
-function initials(name) {
-  return (name || '?').split(' ').map((w) => w.charAt(0)).join('').slice(0, 2).toUpperCase()
-}
 function fmtDate(d) {
   return d ? String(d).slice(0, 10) : '—'
 }
@@ -173,7 +163,7 @@ onMounted(async () => {
                     <td class="px-6 py-4 font-mono text-body-md">{{ fmtDate(c.start_date) }}</td>
                     <td class="px-6 py-4 font-mono text-body-md">{{ fmtDate(c.end_date) }}</td>
                     <td class="px-6 py-4">
-                      <span class="px-3 py-1 text-[11px] font-bold rounded-full border" :class="statusStyles[c.status] || statusStyles.rolled_up">
+                      <span class="px-3 py-1 text-[11px] font-bold rounded-full border" :class="statusColors[c.status] || statusColors.rolled_up">
                         {{ c.status }}
                       </span>
                     </td>

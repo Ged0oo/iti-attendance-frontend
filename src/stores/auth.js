@@ -10,15 +10,14 @@ export const useAuthStore = defineStore('auth', {
     }),
     getters: {
         isAuthenticated: (state) => !!state.token,
-        userRole: (state) => state.user?.role || null,
-        isInstructor: (state) => state.user?.role === 'instructor',
-        isStudent: (state) => state.user?.role === 'student',
-        isManager: (state) => state.user?.role === 'manager'
+        userRole: (state) => state.user?.role || null
     },
     actions: {
         async login(email, password) {
             this.loading = true;
             this.error = null;
+
+            console.log(import.meta.env.VITE_API_BASE_URL);
 
             try {
                 const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/login`, {
@@ -38,6 +37,25 @@ export const useAuthStore = defineStore('auth', {
 
             } catch (error) {
                 this.error = error.response?.data?.message || 'Login failed';
+                throw error;
+            } finally {
+                this.loading = false;
+            }
+        },
+        async fetchMe() {
+            this.loading = true;
+            this.error = null;
+            try {
+                const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/me`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${this.token}`
+                    }
+                });
+                this.user = response.data;
+                localStorage.setItem('user', JSON.stringify(this.user));
+            } catch (error) {
+                this.error = error.response?.data?.message || 'Failed to fetch user';
                 throw error;
             } finally {
                 this.loading = false;

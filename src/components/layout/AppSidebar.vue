@@ -12,6 +12,7 @@ const allLinks = [
   { label: 'Dashboard', icon: 'dashboard', to: '/dashboard', roles: ['branch_manager', 'track_admin', 'instructor', 'student'] },
   { label: 'Users', icon: 'manage_accounts', to: '/users', roles: ['branch_manager', 'track_admin'] },
   { label: 'Tracks', icon: 'school', to: '/tracks', roles: ['branch_manager', 'track_admin'] },
+  { label: 'Cohorts', icon: 'groups', to: '/cohorts', roles: ['branch_manager', 'track_admin'] },
   { label: 'Students', icon: 'group', to: '/students', roles: ['branch_manager', 'track_admin', 'instructor'] },
   { label: 'Instructors', icon: 'badge', to: '/instructors', roles: ['branch_manager', 'track_admin'] },
   { label: 'Course Setup', icon: 'menu_book', to: '/scheduling/courses', roles: ['branch_manager', 'track_admin'] },

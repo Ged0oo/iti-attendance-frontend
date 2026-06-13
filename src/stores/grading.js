@@ -8,6 +8,9 @@ import api from '@/services/api';
  */
 export const useGradingStore = defineStore('grading', () => {
   const gradeCard = ref(null);
+  const distribution = ref(null);
+  const grades = ref([]);
+  const atRiskGrades = ref([]);
   const loading = ref(false);
   const error = ref(null);
 
@@ -24,5 +27,47 @@ export const useGradingStore = defineStore('grading', () => {
     }
   }
 
-  return { gradeCard, loading, error, fetchGradeCard };
+  async function fetchDistribution(params = {}) {
+    loading.value = true;
+    error.value = null;
+    try {
+      const res = await api.get('/grade-distribution', { params });
+      distribution.value = res.data?.data || res.data;
+    } catch (err) {
+      error.value = err.response?.data?.message || err.message || 'Failed to load grade distribution';
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function fetchGrades(params = {}) {
+    loading.value = true;
+    error.value = null;
+    try {
+      const res = await api.get('/grades', { params });
+      const data = res.data?.data || res.data;
+      grades.value = Array.isArray(data) ? data : [];
+      // Populate atRiskGrades with grades below 60
+      atRiskGrades.value = grades.value.filter(g => {
+        const score = g.effective_score ?? g.normalized_score;
+        return score !== undefined && score < 60;
+      });
+    } catch (err) {
+      error.value = err.response?.data?.message || err.message || 'Failed to load grades';
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  return {
+    gradeCard,
+    distribution,
+    grades,
+    atRiskGrades,
+    loading,
+    error,
+    fetchGradeCard,
+    fetchDistribution,
+    fetchGrades
+  };
 });
