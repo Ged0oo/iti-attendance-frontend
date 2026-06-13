@@ -329,7 +329,7 @@ onMounted(async () => {
 </script>
 
 <template>
-    <MainLayout title="">
+    <MainLayout title="Grade Entry">
     <section class="w-full space-y-6">
         <div>
             <p class="text-sm font-semibold uppercase tracking-wide text-primary-container">Instructor grading sheet</p>
