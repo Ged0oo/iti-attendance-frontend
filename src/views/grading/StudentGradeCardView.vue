@@ -37,7 +37,9 @@ const filteredStudents = computed(() => {
 
     return studentOptions.value
         .filter((student) => {
-            return student.name.toLowerCase().includes(query) || student.email.toLowerCase().includes(query);
+            return student.name.toLowerCase().includes(query)
+                || student.email.toLowerCase().includes(query)
+                || String(student.id).includes(query);
         })
         .slice(0, 8);
 });
@@ -142,14 +144,14 @@ onMounted(async () => {
 
 <template>
     <MainLayout title="Grade Cards">
-    <section class="mx-auto max-w-7xl space-y-6">
+    <section class="w-full space-y-6">
         <div class="flex flex-col gap-2">
             <p class="text-sm font-semibold uppercase tracking-wide text-primary-container">Student portal</p>
             <h1 class="font-serif text-4xl text-on-surface">Grade Card</h1>
         </div>
 
         <form class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm" @submit.prevent="submitSearch">
-            <div class="grid gap-4 sm:grid-cols-[minmax(280px,420px)_auto] sm:items-end">
+            <div class="grid gap-4 lg:grid-cols-[minmax(320px,1fr)_220px] lg:items-end">
                 <div class="relative flex min-w-0 flex-col gap-2">
                     <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Student</span>
                     <div class="relative">
@@ -158,7 +160,7 @@ onMounted(async () => {
                             v-model="studentSearch"
                             class="h-11 w-full rounded-lg border-slate-200 pl-10 pr-3 text-sm"
                             type="search"
-                            placeholder="Search by name or email"
+                            placeholder="Search by name, email, or ID"
                             @focus="suggestionsOpen = true"
                             @input="form.student_id = ''; suggestionsOpen = true"
                             @keydown.escape="suggestionsOpen = false"
