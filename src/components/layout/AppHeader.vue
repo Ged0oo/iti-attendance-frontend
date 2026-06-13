@@ -21,7 +21,7 @@ const badge = computed(() => roleBadges[userRole.value] || null)
 <template>
   <header class="bg-surface sticky top-0 border-b border-neutral-200 z-40 flex justify-between items-center h-16 px-margin-desktop" style="background-color: #FFFFFF;">
     <div class="flex items-center gap-4">
-      <h1 class="font-h2 text-h2 text-primary m-0">{{ props.title }}</h1>
+      <h1 v-if="props.title" class="font-h2 text-h2 text-primary m-0">{{ props.title }}</h1>
       <div
         v-if="badge"
         class="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full border ml-2"

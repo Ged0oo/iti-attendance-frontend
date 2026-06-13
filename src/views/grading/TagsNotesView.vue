@@ -161,11 +161,10 @@ onMounted(async () => {
 </script>
 
 <template>
-    <MainLayout title="Tags & Notes">
+    <MainLayout title="">
     <section class="w-full space-y-6">
-        <div class="flex flex-col gap-2">
+        <div>
             <p class="text-sm font-semibold uppercase tracking-wide text-primary-container">Student support</p>
-            <h1 class="font-serif text-4xl text-on-surface">Tags & Notes</h1>
         </div>
 
         <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
