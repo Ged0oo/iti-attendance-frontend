@@ -24,6 +24,8 @@ const overrideForm = reactive({
 const rawDrafts = ref({});
 const notice = ref('');
 const studentOptions = ref([]);
+const studentSearch = ref('');
+const studentSuggestionsOpen = ref(false);
 const overrideError = ref('');
 
 const filteredComponents = computed(() => {
@@ -54,6 +56,22 @@ const canSaveNewGrade = computed(() => {
     return Boolean(filters.grade_component_id && newGrade.student_id && newGrade.raw_score !== '');
 });
 
+const filteredStudentOptions = computed(() => {
+    const query = studentSearch.value.trim().toLowerCase();
+
+    if (!query) {
+        return studentOptions.value.slice(0, 8);
+    }
+
+    return studentOptions.value
+        .filter((student) => {
+            return student.name.toLowerCase().includes(query)
+                || student.email.toLowerCase().includes(query)
+                || String(student.id).includes(query);
+        })
+        .slice(0, 8);
+});
+
 function syncStudentOptions(sourceGrades = grades.value) {
     const unique = new Map();
 
@@ -80,6 +98,17 @@ function syncStudentOptions(sourceGrades = grades.value) {
     });
 
     studentOptions.value = [...unique.values()].sort((a, b) => a.name.localeCompare(b.name));
+
+    if (newGrade.student_id) {
+        const selected = studentOptions.value.find((student) => String(student.id) === String(newGrade.student_id));
+
+        if (selected) {
+            studentSearch.value = formatStudentSearchLabel(selected);
+        } else {
+            newGrade.student_id = '';
+            studentSearch.value = '';
+        }
+    }
 }
 
 async function loadStudentOptions() {
@@ -158,8 +187,25 @@ async function saveNewGrade() {
         rawDrafts.value[saved.id] = saved.raw_score;
         newGrade.student_id = '';
         newGrade.raw_score = '';
+        studentSearch.value = '';
+        studentSuggestionsOpen.value = false;
         notice.value = 'Raw score submitted.';
     }
+}
+
+function formatStudentSearchLabel(student) {
+    return student.email ? `${student.name} (${student.email})` : `${student.name} (#${student.id})`;
+}
+
+function selectStudentForGrade(student) {
+    newGrade.student_id = student.id;
+    studentSearch.value = formatStudentSearchLabel(student);
+    studentSuggestionsOpen.value = false;
+}
+
+function handleStudentSearchInput() {
+    newGrade.student_id = '';
+    studentSuggestionsOpen.value = true;
 }
 
 function openOverride(grade) {
@@ -348,16 +394,38 @@ onMounted(async () => {
 
             <div class="mb-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
                 <div class="grid gap-3 md:grid-cols-[minmax(160px,1fr)_minmax(160px,1fr)_auto] md:items-end">
-                    <label class="space-y-1.5">
+                    <div class="relative space-y-1.5">
                         <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Student</span>
-                        <select v-model="newGrade.student_id" class="h-10 w-full rounded-lg border-slate-200 text-sm disabled:bg-slate-100" :disabled="!activeComponent">
-                            <option value="">Select student</option>
-                            <option v-if="studentOptions.length === 0" value="" disabled>No students loaded</option>
-                            <option v-for="student in studentOptions" :key="student.id" :value="student.id">
-                                {{ student.name }}
-                            </option>
-                        </select>
-                    </label>
+                        <div class="relative">
+                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
+                            <input
+                                v-model="studentSearch"
+                                class="h-10 w-full rounded-lg border-slate-200 pl-10 pr-3 text-sm disabled:bg-slate-100"
+                                type="search"
+                                placeholder="Search by name, email, or ID"
+                                :disabled="!activeComponent"
+                                @focus="studentSuggestionsOpen = Boolean(activeComponent)"
+                                @input="handleStudentSearchInput"
+                                @keydown.escape="studentSuggestionsOpen = false"
+                            />
+                        </div>
+
+                        <div v-if="studentSuggestionsOpen" class="absolute left-0 right-0 top-full z-20 mt-2 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg">
+                            <button
+                                v-for="student in filteredStudentOptions"
+                                :key="student.id"
+                                class="block w-full px-4 py-3 text-left text-sm hover:bg-slate-50"
+                                type="button"
+                                @click="selectStudentForGrade(student)"
+                            >
+                                <span class="block font-medium text-on-surface">{{ student.name }}</span>
+                                <span class="block text-xs text-slate-500">{{ student.email || `Student #${student.id}` }}</span>
+                            </button>
+                            <div v-if="filteredStudentOptions.length === 0" class="px-4 py-3 text-sm text-slate-500">
+                                No students found.
+                            </div>
+                        </div>
+                    </div>
                     <label class="space-y-1.5">
                         <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Raw Score</span>
                         <div class="flex items-center gap-3">
