@@ -31,6 +31,12 @@ const allLinks = [
   { label: 'Scheduling', icon: 'calendar_month', to: '/scheduling/engagements', roles: ['branch_manager', 'track_admin'] },
   { label: 'Billing', icon: 'payments', to: '/billing', roles: ['branch_manager'] },
   { label: 'Reports', icon: 'analytics', to: '/reports', roles: ['branch_manager', 'track_admin'] },
+
+  // ── Student Portal ──────────────────────────────────────────────────
+  { label: 'Attendance',    icon: 'event_available', to: '/attendance/ledger', roles: ['student'] },
+  { label: 'QR Scanner',   icon: 'qr_code_scanner', to: '/attendance/scan',   roles: ['student'], mobileOnly: true },
+  { label: 'Grades',       icon: 'grade',           to: '/student/grades',    roles: ['student'] },
+  { label: 'Submit Excuse', icon: 'description',    to: '/excuses/submit',    roles: ['student'] },
 ]
 
 const links = computed(() =>

@@ -2,6 +2,7 @@
 import { onMounted, reactive, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useGradingStore } from '../../stores/grading';
+import MainLayout from '../../components/layout/MainLayout.vue';
 
 const grading = useGradingStore();
 const { tags, notes, courses, loading, error } = storeToRefs(grading);
@@ -89,6 +90,7 @@ onMounted(async () => {
 </script>
 
 <template>
+    <MainLayout title="Tags & Notes">
     <section class="mx-auto max-w-7xl space-y-6">
         <div class="flex flex-col gap-2">
             <p class="text-sm font-semibold uppercase tracking-wide text-primary-container">Student support</p>
@@ -196,4 +198,5 @@ onMounted(async () => {
             </div>
         </div>
     </section>
+    </MainLayout>
 </template>
