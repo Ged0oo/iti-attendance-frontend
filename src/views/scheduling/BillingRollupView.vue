@@ -246,9 +246,6 @@ function runConfirm() {
             <button class="bg-primary-container text-white font-label text-label py-3 px-5 rounded-lg hover:bg-primary transition-colors flex items-center gap-2" @click="exportCsv">
               <span class="material-symbols-outlined text-[18px]">download</span> Export CSV
             </button>
-            <button class="border-[1.5px] border-primary-ember text-primary-ember hover:bg-primary-mist font-label text-label py-3 px-5 rounded-lg transition-colors flex items-center gap-2" @click="() => window.print()">
-              <span class="material-symbols-outlined text-[18px]">print</span> Print
-            </button>
           </div>
           <p class="font-body-sm text-body-sm text-on-surface-variant">Forwarded to Central Accounting · Ministry of Communications and IT</p>
         </div>
