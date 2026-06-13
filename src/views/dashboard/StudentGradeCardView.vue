@@ -128,10 +128,6 @@ onMounted(async () => {
           <h1 class="font-h1 text-h1 text-on-surface mb-2">Grade Card</h1>
           <p class="font-body-md text-body-md text-on-surface-variant">Track your academic progress and course performance.</p>
         </div>
-        <button class="px-6 py-2.5 rounded-lg border-2 text-primary border-primary font-label text-label hover:bg-primary-mist transition-colors flex items-center gap-2 font-medium w-fit">
-          <span class="material-symbols-outlined text-[18px]">download</span>
-          Download Grade Report
-        </button>
       </div>
 
       <div v-if="loading" class="flex justify-center items-center py-20">

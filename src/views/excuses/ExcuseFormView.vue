@@ -155,42 +155,37 @@ onMounted(async () => {
   const studentId = authStore.user?.student_id
 
   try {
-    const sessionsRes = await api.get('/sessions')
-    const allSessions = sessionsRes.data?.data ?? sessionsRes.data ?? []
+    // Fetch ledger entries (absences) and already-submitted excuses in parallel
+    const [entriesRes] = await Promise.all([
+      api.get(`/students/${studentId}/ledger/entries`),
+      excuseStore.fetchExcuseRequests()
+    ])
 
-    const pastSessions = allSessions.filter((s) => {
-      const d = s.date ?? s.starts_at
-      return d && new Date(d) < new Date()
-    })
-
-    await excuseStore.fetchExcuseRequests()
-    const excusedRecordIds = excuseStore.excuseRequests.map((e) => String(e['attendance_record_id']))
-
-    const entriesRes = await api.get(`/students/${studentId}/ledger/entries`)
     const entries = entriesRes.data?.data ?? entriesRes.data ?? []
 
-    const options = (pastSessions.map((session) => {
-      const entry = entries.find((e) =>
-        e.attendance_record?.session_id === session.id ||
-        e.session_id === session.id
-      )
+    // Already-excused record IDs — don't show them again
+    const excusedRecordIds = new Set(
+      excuseStore.excuseRequests.map((e) => String(e.attendance_record_id))
+    )
 
-      if (!entry) return null
-
-      const recordId = entry.attendance_record_id ?? entry.attendance_record?.id
-      if (!recordId) return null
-
-      const recordIdStr = String(recordId)
-      if (excusedRecordIds.includes(recordIdStr)) return null
-
-      const dateStr = formatDate(session.date ?? session.starts_at)
-      const typeStr = session.type ?? session.engagement?.type ?? 'Session'
-
-      return {
-        label: `${dateStr} — ${typeStr}`,
-        attendance_record_id: recordIdStr
-      }
-    }).filter(Boolean))
+    // Each ledger entry with a negative delta IS an absence
+    // The entry already carries the attendance_record_id we need to submit
+    const options = entries
+      .filter((entry) => {
+        if (!entry.attendance_record_id) return false          // must have a record
+        if (Number(entry.delta) >= 0) return false             // skip bonus/neutral entries
+        if (excusedRecordIds.has(String(entry.attendance_record_id))) return false  // already excused
+        return true
+      })
+      .map((entry) => {
+        const dateStr = formatDate(entry.created_at)
+        // Strip the em-dash prefix the backend adds, e.g. "Unexcused Absence — Tinker Test"
+        const reasonShort = (entry.reason || 'Absence').replace(/^Unexcused Absence\s*[—–-]+\s*/i, '').trim() || 'Absence'
+        return {
+          label: `${dateStr} — ${reasonShort} (record #${entry.attendance_record_id})`,
+          attendance_record_id: String(entry.attendance_record_id)
+        }
+      })
 
     availableItems.value = options
 

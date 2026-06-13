@@ -29,4 +29,10 @@ export default [
         component: () => import('../views/dashboard/StudentDashboard.vue'),
         meta: { requiresAuth: true, roles: ['student'] },
     },
+    {
+        path: '/student/profile',
+        name: 'student-profile',
+        component: () => import('../views/dashboard/StudentProfileView.vue'),
+        meta: { requiresAuth: true, roles: ['student'] },
+    },
 ]  
