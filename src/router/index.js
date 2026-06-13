@@ -39,6 +39,10 @@ const router = createRouter({
 router.beforeEach((to, _from) => {
   const auth = useAuthStore()
 
+  if (auth.isAuthenticated && to.meta.requiresAuth === false) {
+    return { name: 'dashboard' }
+  }
+
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
     return { name: 'login' }
   }
