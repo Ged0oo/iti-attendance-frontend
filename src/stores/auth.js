@@ -17,10 +17,8 @@ export const useAuthStore = defineStore('auth', {
             this.loading = true;
             this.error = null;
 
-            console.log(import.meta.env.VITE_API_BASE_URL);
-
             try {
-                const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/login`, {
+                const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/login`, {
                     email,
                     password
                 }, {
@@ -46,7 +44,7 @@ export const useAuthStore = defineStore('auth', {
             this.loading = true;
             this.error = null;
             try {
-                const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/me`, {
+                const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/me`, {
                     headers: {
                         'Accept': 'application/json',
                         'Authorization': `Bearer ${this.token}`

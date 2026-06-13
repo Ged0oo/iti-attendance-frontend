@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup>
 import AppSidebar from './AppSidebar.vue'
 import AppHeader from './AppHeader.vue'
 
