@@ -43,38 +43,46 @@
               <span class="kpi-total">/ 250 pts</span>
             </div>
           </div>
-          <div class="mt-6">
-            <div class="progress-bar-bg">
-              <div class="progress-bar-fill bg-success" :style="{ width: `${Math.min(100, Math.max(0, (ledgerStore.balance / 250) * 100))}%` }"></div>
+          <template #footer>
+            <div class="mt-6">
+              <div class="progress-bar-bg">
+                <div
+                  class="progress-bar-fill"
+                  :class="ledgerStore.isAtRisk ? 'bg-danger' : 'bg-success'"
+                  :style="{ width: `${Math.min(100, Math.max(0, (ledgerStore.balance / 250) * 100))}%` }"
+                ></div>
+              </div>
+              <div class="status-text" :class="{ 'text-danger': ledgerStore.isAtRisk }">
+                <span class="material-symbols-outlined text-[14px]">warning</span>
+                <span>{{ ledgerStore.isAtRisk ? 'At-risk below 150 pts' : 'Good standing' }}</span>
+              </div>
             </div>
-            <div class="status-text" :class="{ 'text-danger': ledgerStore.isAtRisk }">
-              <span class="material-symbols-outlined text-[14px]">warning</span>
-              <span>{{ ledgerStore.isAtRisk ? 'At-risk below 150 pts' : 'Good standing' }}</span>
-            </div>
-          </div>
+          </template>
         </SummaryCard>
 
         <!-- Card 2: Grand Total Score -->
         <SummaryCard title="Grand Total Score" icon="emoji_events" variant="primary">
-          <div class="mt-4 flex-between">
+          <div class="mt-4 flex justify-between items-center pr-2">
             <div class="flex items-baseline gap-2">
               <span class="kpi-value">{{ grandTotal }}</span>
               <span class="kpi-total">/ {{ maxGrandTotal }}</span>
             </div>
-            <div class="flex-center gap-3">
+            <div class="flex items-center gap-3">
               <span class="grade-badge">{{ currentGrade }}</span>
-              <GrandTotalRing :total="grandTotal" :max="maxGrandTotal" :grade-letter="currentGrade" />
+              <GrandTotalRing :total="grandTotal" :max="maxGrandTotal" mini />
             </div>
           </div>
-          <div class="mt-6 text-right text-sm text-secondary">
-            <span>+0 pts since last week</span>
-          </div>
+          <template #footer>
+            <div class="mt-6 text-right text-sm text-secondary">
+              <span>+0 pts since last week</span>
+            </div>
+          </template>
         </SummaryCard>
 
         <!-- Card 3: Pending Actions -->
         <SummaryCard title="Pending Actions" icon="assignment_late" variant="warning">
-          <div class="mt-4 flex-col-center">
-            <span class="kpi-value text-warning">{{ pendingActionsCount }}</span>
+          <div class="mt-4 flex-col-center pb-2">
+            <span class="font-kpi text-[64px] leading-none text-warning">{{ pendingActionsCount }}</span>
             <span class="kpi-subtitle mt-2">Unanswered items</span>
           </div>
         </SummaryCard>
@@ -82,7 +90,6 @@
 
       <!-- Row 2: Panels -->
       <div class="panels-grid">
-        <!-- Left Panel: Announcements -->
         <div class="panel col-5">
           <div class="panel-header">
             <h2 class="panel-title">Recent Announcements</h2>
@@ -100,11 +107,6 @@
               </div>
               <p class="announcement-title">{{ ann.title }}</p>
             </div>
-          </div>
-          <div class="panel-footer">
-            <a href="#" class="view-all-link">
-              View All <span class="material-symbols-outlined">arrow_forward</span>
-            </a>
           </div>
         </div>
 
@@ -195,13 +197,14 @@ const maxGrandTotal = computed(() => {
 
 const currentGrade = computed(() => {
   if (maxGrandTotal.value === 0) return 'N/A';
-  const pct = grandTotal.value / maxGrandTotal.value;
-  if (pct >= 0.9) return 'A';
-  if (pct >= 0.85) return 'A-';
-  if (pct >= 0.8) return 'B+';
-  if (pct >= 0.75) return 'B';
-  if (pct >= 0.7) return 'C+';
-  return 'C';
+  const pct = (grandTotal.value / maxGrandTotal.value) * 100;
+  if (pct >= 90) return 'A';
+  if (pct >= 85) return 'B+';
+  if (pct >= 80) return 'B';
+  if (pct >= 75) return 'C+';
+  if (pct >= 70) return 'C';
+  if (pct >= 60) return 'D';
+  return 'F';
 });
 
 onMounted(async () => {
@@ -211,14 +214,27 @@ onMounted(async () => {
     }
     
     const studentId = authStore.user?.student_id;
-    const cohortId = authStore.user?.cohort_id;
+    let cohortId = authStore.user?.cohort_id;
 
     if (studentId) {
-      // Don't await here directly if we want parallel fetching
-      ledgerStore.fetchLedger(studentId).catch(() => {});
+      // Fetch student profile to get cohort_id if it's missing from /me
+      if (!cohortId) {
+        try {
+          const profileRes = await api.get(`/students/${studentId}`);
+          cohortId = profileRes.data?.data?.cohort_id || profileRes.data?.cohort_id;
+        } catch (e) {
+          console.error("Could not fetch student profile", e);
+        }
+      }
     }
 
     const promises = [];
+
+    if (studentId) {
+      promises.push(
+        ledgerStore.fetchLedger(studentId).catch(() => {})
+      );
+    }
 
     // Fetch sessions
     promises.push(
@@ -440,11 +456,23 @@ const formatTimeRange = (start, end) => {
   to { transform: rotate(360deg); }
 }
 
+@keyframes fadeSlideUp {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
 .summary-cards-grid {
   display: grid;
   grid-template-columns: repeat(1, 1fr);
   gap: 24px;
 }
+
+.summary-cards-grid > * {
+  animation: fadeSlideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.summary-cards-grid > *:nth-child(1) { animation-delay: 0.1s; }
+.summary-cards-grid > *:nth-child(2) { animation-delay: 0.2s; }
+.summary-cards-grid > *:nth-child(3) { animation-delay: 0.3s; }
 
 @media (min-width: 768px) {
   .summary-cards-grid {
@@ -488,6 +516,7 @@ const formatTimeRange = (start, end) => {
 }
 
 .bg-success { background-color: var(--color-success, #059669); }
+.bg-danger  { background-color: var(--color-danger, #DC2626); }
 
 .status-text {
   display: flex;
@@ -545,6 +574,12 @@ const formatTimeRange = (start, end) => {
   gap: 24px;
 }
 
+.panels-grid > * {
+  animation: fadeSlideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.panels-grid > *:nth-child(1) { animation-delay: 0.4s; }
+.panels-grid > *:nth-child(2) { animation-delay: 0.5s; }
+
 @media (min-width: 1024px) {
   .panels-grid {
     grid-template-columns: repeat(12, 1fr);
@@ -555,11 +590,19 @@ const formatTimeRange = (start, end) => {
 
 .panel {
   background-color: var(--color-surface, #FFFFFF);
-  border-radius: 20px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  border-radius: 24px;
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.03);
   display: flex;
   flex-direction: column;
   padding: 24px;
+  transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.panel:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 48px -12px rgba(0,0,0,0.08);
+  border-color: rgba(0,0,0,0.1);
 }
 
 .panel.no-padding {
@@ -612,14 +655,33 @@ const formatTimeRange = (start, end) => {
 
 .announcement-item {
   padding: 16px;
-  border-radius: 12px;
-  border: 1px solid rgba(0,0,0,0.05);
+  border-radius: 16px;
+  background-color: var(--color-surface, #FFFFFF);
+  border: 1px solid rgba(0,0,0,0.04);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.announcement-item::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; bottom: 0; width: 4px;
+  background-color: var(--color-primary, #8B1A1A);
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .announcement-item:hover {
-  background-color: rgba(0,0,0,0.02);
+  transform: translateX(4px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.06);
+  border-color: rgba(0,0,0,0.08);
+}
+
+.announcement-item:hover::before {
+  opacity: 1;
 }
 
 .announcement-item:hover .announcement-title {
@@ -671,32 +733,7 @@ const formatTimeRange = (start, end) => {
   transition: color 0.2s;
 }
 
-.panel-footer {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid rgba(0,0,0,0.05);
-  text-align: center;
-}
 
-.view-all-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-family: "DM Sans", sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--color-primary, #8B1A1A);
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.view-all-link:hover {
-  color: var(--color-primary-deep, #6B1212);
-}
-
-.view-all-link .material-symbols-outlined {
-  font-size: 16px;
-}
 
 .course-grades-list {
   display: flex;
@@ -708,6 +745,8 @@ const formatTimeRange = (start, end) => {
 .sessions-section {
   display: flex;
   flex-direction: column;
+  animation: fadeSlideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: 0.6s;
 }
 
 .sessions-header {

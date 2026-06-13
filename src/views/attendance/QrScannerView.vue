@@ -282,7 +282,10 @@ const handleScan = async (qrValue) => {
 
 const resetAndScanAgain = () => {
   attendanceStore.resetScan()
-  // Resume camera scanning tick
+  if (requestAnimationId) {
+    cancelAnimationFrame(requestAnimationId)
+    requestAnimationId = null
+  }
   requestAnimationId = requestAnimationFrame(tick)
 }
 
