@@ -1,5 +1,3 @@
-import QrScannerView from '@/views/attendance/QrScannerView.vue';
-import AttendanceLogView from '@/views/attendance/AttendanceLogView.vue';
 
 export default [
     {

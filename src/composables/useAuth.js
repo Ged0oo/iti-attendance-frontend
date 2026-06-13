@@ -1,35 +1,37 @@
-import { ref, computed } from 'vue'
-import { useAuthStore } from '../stores/auth'
+import { computed } from 'vue';
+import { useAuthStore } from '@/stores/auth';
 
+/**
+ * useAuth composable — wraps the auth store for convenience.
+ * This is a JS re-export of the shared auth composable.
+ */
 export function useAuth() {
-  const store = useAuthStore()
+  const authStore = useAuthStore();
 
-  const isAuthenticated = computed(() => store.isAuthenticated)
-  const currentUser = computed(() => store.user)
-  const userRole = computed(() => store.userRole)
-  const loading = ref(false)
-  const error = ref(null)
+  const user = computed(() => authStore.user);
+  const isAuthenticated = computed(() => authStore.isAuthenticated);
+  const role = computed(() => authStore.role);
+  const token = computed(() => authStore.token);
 
-  function hasRole(...roles) {
-    return roles.includes(store.userRole)
-  }
-
-  async function login(email, password) {
-    loading.value = true
-    error.value = null
-    try {
-      await store.login(email, password)
-    } catch (e) {
-      error.value = e.response?.data?.message || 'Login failed'
-      throw e
-    } finally {
-      loading.value = false
-    }
+  async function login(credentials) {
+    return authStore.login(credentials);
   }
 
   async function logout() {
-    await store.logout()
+    return authStore.logout();
   }
 
-  return { isAuthenticated, currentUser, userRole, hasRole, login, logout, loading, error }
+  async function fetchMe() {
+    return authStore.fetchMe();
+  }
+
+  return {
+    user,
+    isAuthenticated,
+    role,
+    token,
+    login,
+    logout,
+    fetchMe,
+  };
 }
