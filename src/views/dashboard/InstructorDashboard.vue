@@ -4,7 +4,12 @@ import { storeToRefs } from 'pinia';
 import { useGradingStore } from '../../stores/grading';
 
 const grading = useGradingStore();
-const { distribution, grades, loading, error } = storeToRefs(grading);
+const { loading, error } = storeToRefs(grading);
+
+// Safely access properties that might not be implemented in the grading store stub yet
+const distribution = computed(() => grading.distribution || {});
+const grades = computed(() => grading.grades || []);
+const atRiskGrades = computed(() => grading.atRiskGrades || []);
 
 const filters = reactive({
     course_id: '',
@@ -13,7 +18,7 @@ const filters = reactive({
 
 const buckets = computed(() => distribution.value?.buckets ?? []);
 const total = computed(() => buckets.value.reduce((sum, bucket) => sum + Number(bucket.count ?? 0), 0));
-const needsReview = computed(() => grading.atRiskGrades.slice(0, 4));
+const needsReview = computed(() => atRiskGrades.value.slice(0, 4));
 
 function params() {
     return Object.fromEntries(Object.entries(filters).filter(([, value]) => value !== ''));
@@ -30,10 +35,17 @@ function height(bucket) {
 async function loadDashboard() {
     const requestParams = params();
 
-    await Promise.all([
-        grading.fetchDistribution(requestParams),
-        grading.fetchGrades(requestParams),
-    ]);
+    const promises = [];
+    if (typeof grading.fetchDistribution === 'function') {
+        promises.push(grading.fetchDistribution(requestParams));
+    }
+    if (typeof grading.fetchGrades === 'function') {
+        promises.push(grading.fetchGrades(requestParams));
+    }
+    
+    if (promises.length > 0) {
+        await Promise.all(promises);
+    }
 }
 
 onMounted(loadDashboard);

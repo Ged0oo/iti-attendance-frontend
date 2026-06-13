@@ -3,23 +3,25 @@
   <div class="flex min-h-screen w-full">
     <!-- Left Panel (Brand/Identity) -->
     <div
-      class="hidden lg:flex w-[45%] bg-[#1A0A0A] relative flex-col justify-center items-center p-margin-desktop overflow-hidden border-r border-shell-border"
-      style="background-image: url('/src/assets/login-bg.png'); background-size: cover; background-position: center;"
+      class="hidden lg:flex w-[45%] bg-[#1A0A0A] relative flex-col justify-center items-center overflow-hidden border-r border-shell-border"
     >
-      <!-- Theme Red Overlay -->
+      <!-- Background Image with Red Overlay -->
+      <img src="@/assets/iti-building.png" alt="ITI Building Background" class="absolute inset-0 w-full h-full object-cover z-0" />
+      <div class="absolute inset-0 bg-[#8B1A1A]/80 z-0 mix-blend-multiply"></div>
+      
+      <!-- Subtle Radial Glow -->
       <div
-        class="absolute inset-0 z-0"
-        style="background-color: rgba(139, 26, 26, 0.85);"
+        class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(168,32,32,0.4)_0%,_rgba(26,10,10,0)_70%)] z-0"
       ></div>
       <div
         class="relative z-10 max-w-md w-full flex flex-col items-center text-center space-y-8"
       >
         <!-- Typography Group -->
         <div class="space-y-4">
-          <h1 class="font-h1 text-h1 text-white">
+          <h1 class="font-h1 text-h1 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
             Information Technology Institute
           </h1>
-          <p class="font-body-lg text-body-lg text-white/70 max-w-sm mx-auto">
+          <p class="font-body-lg text-body-lg text-white/80 max-w-sm mx-auto drop-shadow-md">
             Powering Egypt's tech talent — one cohort at a time.
           </p>
         </div>
@@ -32,19 +34,19 @@
           </p>
           <div class="flex flex-wrap justify-center gap-3">
             <span
-              class="inline-flex items-center px-4 py-1.5 rounded-full font-label text-label bg-white/10 text-white/90 border border-white/5 backdrop-blur-sm shadow-sm"
+              class="inline-flex items-center px-4 py-1.5 rounded-full font-label text-label bg- white/10 text-white/90 border border-white/5 backdrop-blur-sm shadow-sm"
               >Branch Manager</span
             >
             <span
-              class="inline-flex items-center px-4 py-1.5 rounded-full font-label text-label bg-white/10 text-white/90 border border-white/5 backdrop-blur-sm shadow-sm"
+              class="inline-flex items-center px-4 py-1.5 rounded-full font-label text-label bg- white/10 text-white/90 border border-white/5 backdrop-blur-sm shadow-sm"
               >Track Admin</span
             >
             <span
-              class="inline-flex items-center px-4 py-1.5 rounded-full font-label text-label bg-white/10 text-white/90 border border-white/5 backdrop-blur-sm shadow-sm"
+              class="inline-flex items-center px-4 py-1.5 rounded-full font-label text-label bg- white/10 text-white/90 border border-white/5 backdrop-blur-sm shadow-sm"
               >Instructor</span
             >
             <span
-              class="inline-flex items-center px-4 py-1.5 rounded-full font-label text-label bg-white/10 text-white/90 border border-white/5 backdrop-blur-sm shadow-sm"
+              class="inline-flex items-center px-4 py-1.5 rounded-full font-label text-label bg- white/10 text-white/90 border border-white/5 backdrop-blur-sm shadow-sm"
               >Student</span
             >
           </div>
