@@ -1,0 +1,53 @@
+import { defineStore } from 'pinia'
+import axios from 'axios'
+
+export const useAuthStore = defineStore('auth', {
+    state: () => ({
+        user: JSON.parse(localStorage.getItem('user')) || null,
+        token: localStorage.getItem('token') || null,
+        loading: false,
+        error: null
+    }),
+    getters: {
+        isAuthenticated: (state) => !!state.token,
+        userRole: (state) => state.user?.role || null,
+        isInstructor: (state) => state.user?.role === 'instructor',
+        isStudent: (state) => state.user?.role === 'student',
+        isManager: (state) => state.user?.role === 'manager'
+    },
+    actions: {
+        async login(email, password) {
+            this.loading = true;
+            this.error = null;
+
+            try {
+                const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/login`, {
+                    email,
+                    password
+                }, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                this.user = response.data.user;
+                this.token = response.data.token;
+
+                localStorage.setItem('token', this.token);
+                localStorage.setItem('user', JSON.stringify(this.user));
+
+            } catch (error) {
+                this.error = error.response?.data?.message || 'Login failed';
+                throw error;
+            } finally {
+                this.loading = false;
+            }
+        },
+        logout() {
+            this.user = null;
+            this.token = null;
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+        }
+    }
+});
