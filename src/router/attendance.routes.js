@@ -1,9 +1,8 @@
-
 export default [
     {
         path: '/attendance/scan',
         name: 'attendance-scan',
-        component: QrScannerView,
+        component: () => import('@/views/attendance/QrScannerView.vue'),
         meta: { requiresAuth: true }
     },
     {
