@@ -62,7 +62,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
@@ -75,7 +75,7 @@ const authStore  = useAuthStore();
 const ledgerStore = useLedgerStore();
 
 const hasDeductions = computed(() =>
-  ledgerStore.entries.some((e: any) => e.delta < 0)
+  ledgerStore.entries.some((e) => e.delta < 0)
 );
 
 function goToExcuse() {

@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useLedgerStore } from '@/stores/ledger'
@@ -12,18 +12,18 @@ const authStore = useAuthStore()
 const ledgerStore = useLedgerStore()
 
 const loading = ref(true)
-const error = ref<string | null>(null)
-const gradeCardData = ref<any>(null)
+const error = ref(null)
+const gradeCardData = ref(null)
 
 // Computed metrics
 const courses = computed(() => gradeCardData.value?.courses || [])
 
 const sumCourseScores = computed(() => {
-  return courses.value.reduce((acc: number, c: any) => acc + (Number(c.total_score) || 0), 0)
+  return courses.value.reduce((acc, c) => acc + (Number(c.total_score) || 0), 0)
 })
 
 const sumCourseMaxScores = computed(() => {
-  return courses.value.reduce((acc: number, c: any) => acc + (Number(c.course?.max_score) || 0), 0)
+  return courses.value.reduce((acc, c) => acc + (Number(c.course?.max_score) || 0), 0)
 })
 
 const grandTotal = computed(() => {
@@ -59,10 +59,10 @@ const ledgerPercentage = computed(() => {
 
 // Calculate timeline for sparkline — tracks cumulative course score over time (not ledger)
 const timeline = computed(() => {
-  const allGrades: any[] = []
-  courses.value.forEach((c: any) => {
+  const allGrades = []
+  courses.value.forEach((c) => {
     if (c.components) {
-      allGrades.push(...c.components.filter((g: any) => g.created_at || g.updated_at))
+      allGrades.push(...c.components.filter((g) => g.created_at || g.updated_at))
     }
   })
 
@@ -78,7 +78,7 @@ const timeline = computed(() => {
   allGrades.sort((a, b) => new Date(a.created_at || a.updated_at).getTime() - new Date(b.created_at || b.updated_at).getTime())
 
   const earliest = new Date(allGrades[0].created_at || allGrades[0].updated_at).getTime()
-  const weeklyTotals = new Map<number, number>()
+  const weeklyTotals = new Map()
 
   // Running total of course scores only (ledger is a separate axis)
   let runningTotal = 0
@@ -118,7 +118,7 @@ onMounted(async () => {
     ])
 
     gradeCardData.value = gradeCardRes.data?.data || gradeCardRes.data
-  } catch (err: any) {
+  } catch (err) {
     error.value = err.response?.data?.message || err.message || 'Failed to load grade card'
   } finally {
     loading.value = false

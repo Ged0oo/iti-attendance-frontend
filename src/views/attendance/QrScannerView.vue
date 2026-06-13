@@ -162,7 +162,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import jsQR from 'jsqr'
 import { useAttendanceStore } from '@/stores/attendance'
@@ -171,8 +171,8 @@ import { useAuthStore } from '@/stores/auth'
 const attendanceStore = useAttendanceStore()
 const authStore = useAuthStore()
 
-const displayVideoEl = ref<HTMLVideoElement | null>(null)
-const canvasEl = ref<HTMLCanvasElement | null>(null)
+const displayVideoEl = ref(null)
+const canvasEl = ref(null)
 const cameraError = ref(false)
 
 const scanState = computed(() => attendanceStore.scanState)
@@ -186,8 +186,8 @@ const sessionInfo = computed(() => {
   return `${session.title || 'Session'} · ${new Date(session.date || Date.now()).toLocaleDateString()}`
 })
 
-let stream: MediaStream | null = null
-let requestAnimationId: number | null = null
+let stream = null
+let requestAnimationId = null
 
 const startCamera = async () => {
   try {
@@ -258,7 +258,7 @@ const tick = () => {
   requestAnimationId = requestAnimationFrame(tick)
 }
 
-const handleScan = async (qrValue: string) => {
+const handleScan = async (qrValue) => {
   await attendanceStore.submitScan(qrValue)
   // If the scan resulted in an error state or success, we stay in that state.
   // The UI will show the "Scan Again" button which resets the store state.

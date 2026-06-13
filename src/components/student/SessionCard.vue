@@ -18,16 +18,16 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { computed } from 'vue';
 
-const props = defineProps<{
-  date: string;
-  type: string;
-  title: string;
-  instructor: string;
-  time: string;
-}>();
+const props = defineProps({
+  date: { type: String, required: true },
+  type: { type: String, required: true },
+  title: { type: String, required: true },
+  instructor: { type: String, required: true },
+  time: { type: String, required: true }
+});
 
 const backgroundIcon = computed(() => {
   const t = props.type.toLowerCase();

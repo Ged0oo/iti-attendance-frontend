@@ -11,12 +11,12 @@
   </div>
 </template>
 
-<script setup lang="ts">
-defineProps<{
-  title: string;
-  icon: string;
-  variant?: 'success' | 'primary' | 'warning' | 'at-risk';
-}>();
+<script setup>
+defineProps({
+  title: { type: String, required: true },
+  icon: { type: String, required: true },
+  variant: { type: String, default: 'primary' }
+});
 </script>
 
 <style scoped>

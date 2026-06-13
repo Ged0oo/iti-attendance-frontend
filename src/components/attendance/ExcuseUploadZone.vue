@@ -35,19 +35,16 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref } from 'vue';
 
-const props = defineProps<{
-  modelValue: File | null
-}>();
+const props = defineProps({
+  modelValue: { default: null }
+});
 
-const emit = defineEmits<{
-  'update:modelValue': [file: File | null]
-  'validation-error': [message: string]
-}>();
+const emit = defineEmits(['update:modelValue', 'validation-error']);
 
-const fileInput = ref<HTMLInputElement | null>(null);
+const fileInput = ref(null);
 const isDragOver = ref(false);
 
 const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
@@ -63,7 +60,7 @@ function onDragLeave() {
   isDragOver.value = false;
 }
 
-function onDrop(event: DragEvent) {
+function onDrop(event) {
   isDragOver.value = false;
   if (props.modelValue) return; // Prevent overwriting without explicit remove
 
@@ -80,8 +77,8 @@ function triggerInput() {
   }
 }
 
-function onFileChange(event: Event) {
-  const target = event.target as HTMLInputElement;
+function onFileChange(event) {
+  const target = event.target;
   if (target.files && target.files.length > 0) {
     const file = target.files.item(0);
     if (file) handleFile(file);
@@ -90,7 +87,7 @@ function onFileChange(event: Event) {
   }
 }
 
-function handleFile(file: File) {
+function handleFile(file) {
   if (!ALLOWED_TYPES.includes(file.type)) {
     emit('validation-error', 'Invalid file type. Only PDF, JPG, or PNG are allowed.');
     return;
@@ -108,7 +105,7 @@ function removeFile() {
   emit('update:modelValue', null);
 }
 
-function formatSize(bytes: number): string {
+function formatSize(bytes) {
   if (bytes === 0) return '0 B';
   const k = 1024;
   const sizes = ['B', 'KB', 'MB'];

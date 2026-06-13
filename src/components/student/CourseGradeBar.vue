@@ -1,16 +1,12 @@
-<script setup lang="ts">
+<script setup>
 import { computed, ref, onMounted } from 'vue'
 
-const props = defineProps<{
+const props = defineProps({
   courseObj: {
-    course: { name: string; max_score: number }
-    total_score: number
-    components: {
-      effective_score: number
-      grade_component: { name: string; weight: number }
-    }[]
+    type: Object,
+    required: true
   }
-}>()
+})
 
 const isMounted = ref(false)
 

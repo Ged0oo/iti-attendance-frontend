@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup>
 import { ref, computed, onMounted } from 'vue'
 import MainLayout from '../../components/layout/MainLayout.vue'
 import { useCohortStore } from '../../stores/cohort'

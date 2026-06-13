@@ -119,7 +119,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
@@ -127,39 +127,14 @@ import { useExcuseStore } from '@/stores/excuse';
 import api from '@/services/api';
 import ExcuseUploadZone from '@/components/attendance/ExcuseUploadZone.vue';
 
-interface AvailableExcuseSession {
-  label: string;
-  attendance_record_id: string | number;
-}
-
-interface ApiSession {
-  id: string | number;
-  date?: string;
-  starts_at?: string;
-  type?: string;
-  engagement?: {
-    type?: string;
-  };
-}
-
-interface LedgerEntry {
-  attendance_record_id?: string | number;
-  attendance_record?: {
-    id: string | number;
-    session_id?: string | number;
-  };
-  session_id?: string | number;
-}
-
 const router = useRouter();
 const authStore = useAuthStore();
 const excuseStore = useExcuseStore();
 
-// Form state
 const form = ref({
   attendance_record_id: '',
   reason: '',
-  attachment: null as File | null
+  attachment: null
 });
 
 const reasonLength = computed(() => form.value.reason.length);
@@ -170,7 +145,7 @@ const isFormValid = computed(() => {
 });
 
 // Data state
-const availableItems = ref<AvailableExcuseSession[]>([]);
+const availableItems = ref([]);
 const loadingData = ref(true);
 const toastError = ref('');
 
@@ -191,22 +166,22 @@ onMounted(async () => {
     const sessionsRes = await api.get('/sessions');
     const allSessions = sessionsRes.data?.data ?? sessionsRes.data ?? [];
     
-    const pastSessions = allSessions.filter((s: ApiSession) => {
+    const pastSessions = allSessions.filter((s) => {
       const d = s.date ?? s.starts_at;
       return d && new Date(d) < new Date();
     });
 
     // 2. Fetch student's existing excuse requests
     await excuseStore.fetchExcuseRequests();
-    const excusedRecordIds = excuseStore.excuseRequests.map((e: Record<string, unknown>) => String(e['attendance_record_id']));
+    const excusedRecordIds = excuseStore.excuseRequests.map((e) => String(e['attendance_record_id']));
 
     // 3. Fetch student's ledger entries
     const entriesRes = await api.get(`/students/${studentId}/ledger/entries`);
     const entries = entriesRes.data?.data ?? entriesRes.data ?? [];
 
     // Build dropdown options
-    const options = (pastSessions.map((session: ApiSession) => {
-      const entry = entries.find((e: LedgerEntry) => 
+    const options = (pastSessions.map((session) => {
+      const entry = entries.find((e) => 
         e.attendance_record?.session_id === session.id ||
         e.session_id === session.id
       );
@@ -226,7 +201,7 @@ onMounted(async () => {
         label: `${dateStr} — ${typeStr}`,
         attendance_record_id: recordIdStr
       };
-    }).filter(Boolean)) as AvailableExcuseSession[];
+    }).filter(Boolean));
 
     availableItems.value = options;
 
@@ -241,17 +216,17 @@ onUnmounted(() => {
   excuseStore.reset();
 });
 
-function formatDate(dateString?: string): string {
+function formatDate(dateString) {
   if (!dateString) return '';
   const date = new Date(dateString);
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-function handleValidationError(message: string) {
+function handleValidationError(message) {
   showToast(message);
 }
 
-function showToast(message: string) {
+function showToast(message) {
   toastError.value = message;
   setTimeout(() => {
     toastError.value = '';
@@ -268,10 +243,9 @@ async function handleSubmit() {
       attachment: form.value.attachment
     });
     
-  } catch (err: unknown) {
-    const error = err as Record<string, unknown>;
+  } catch (err) {
     // Network errors or non-422 errors
-    if (!(error.response as Record<string, unknown>) || (error.response as Record<string, unknown>).status !== 422) {
+    if (!err.response || err.response.status !== 422) {
       showToast('An error occurred while submitting your request.');
     }
   }

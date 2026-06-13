@@ -153,7 +153,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, onMounted, computed } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useLedgerStore } from '@/stores/ledger';
@@ -167,41 +167,15 @@ import SessionCard from '@/components/student/SessionCard.vue';
 const authStore = useAuthStore();
 const ledgerStore = useLedgerStore();
 
-interface Announcement {
-  id: string | number;
-  author_name?: string;
-  author_role?: string;
-  title: string;
-  created_at: string;
-}
-
-interface Session {
-  id: string | number;
-  start_time: string;
-  end_time?: string;
-  type?: string;
-  title?: string;
-  instructor_name?: string;
-}
-
-interface CourseGrade {
-  course: { name: string; max_score: number };
-  total_score: number;
-  components: {
-    effective_score: number;
-    grade_component: { name: string; weight: number };
-  }[];
-}
-
 const isLoading = ref(true);
-const announcements = ref<Announcement[]>([]);
-const sessions = ref<Session[]>([]);
-const courseGrades = ref<CourseGrade[]>([]);
+const announcements = ref([]);
+const sessions = ref([]);
+const courseGrades = ref([]);
 const pendingActionsCount = ref(0);
 
-const sessionsScrollRef = ref<HTMLElement | null>(null);
+const sessionsScrollRef = ref(null);
 
-const scrollSessions = (direction: number) => {
+const scrollSessions = (direction) => {
   if (sessionsScrollRef.value) {
     const scrollAmount = 344; // Card width + gap
     sessionsScrollRef.value.scrollBy({ left: scrollAmount * direction, behavior: 'smooth' });
@@ -210,12 +184,12 @@ const scrollSessions = (direction: number) => {
 
 const grandTotal = computed(() => {
   // Grand Total = Attendance Ledger + Sum of Course Normalized Scores
-  const courseSum = courseGrades.value.reduce((sum: number, g: CourseGrade) => sum + (g.total_score || 0), 0);
+  const courseSum = courseGrades.value.reduce((sum, g) => sum + (g.total_score || 0), 0);
   return ledgerStore.balance + courseSum;
 });
 
 const maxGrandTotal = computed(() => {
-  const courseMax = courseGrades.value.reduce((sum: number, g: CourseGrade) => sum + (g.course?.max_score || 100), 0)
+  const courseMax = courseGrades.value.reduce((sum, g) => sum + (g.course?.max_score || 100), 0)
   return 250 + courseMax;
 });
 
@@ -266,7 +240,7 @@ onMounted(async () => {
     promises.push(
       api.get('/excuse-requests').then(res => {
         const requests = res.data.data || res.data || [];
-        pendingActionsCount.value = requests.filter((r: Record<string, unknown>) => r.status === 'pending').length;
+        pendingActionsCount.value = requests.filter((r) => r.status === 'pending').length;
       }).catch(() => {})
     );
 
@@ -275,13 +249,13 @@ onMounted(async () => {
       promises.push(
         api.get(`/students/${studentId}/grade-card`).then(res => {
           const gradeCardData = res.data?.data || res.data
-          courseGrades.value = (gradeCardData?.courses || []).map((c: any) => ({
+          courseGrades.value = (gradeCardData?.courses || []).map((c) => ({
             course: {
               name: c.course?.name || c.name || 'Course',
               max_score: Number(c.course?.max_score) || Number(c.max_score) || 100
             },
             total_score: Number(c.total_score) || 0,
-            components: (c.components || []).map((comp: any) => ({
+            components: (c.components || []).map((comp) => ({
               effective_score: Number(comp.effective_score) || 0,
               grade_component: {
                 name: comp.grade_component?.name || comp.name || 'Component',
@@ -296,22 +270,22 @@ onMounted(async () => {
     }
 
     await Promise.allSettled(promises);
-  } catch (err: unknown) {
+  } catch (err) {
     // silently fail on dashboard load
   } finally {
     isLoading.value = false;
   }
 });
 
-const formatDateShort = (dateStr: string) => {
+const formatDateShort = (dateStr) => {
   if (!dateStr) return '';
   const d = new Date(dateStr);
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 };
 
-const formatTimeRange = (start: string, end?: string) => {
+const formatTimeRange = (start, end) => {
   if (!start) return '';
-  const formatTime = (timeStr: string) => {
+  const formatTime = (timeStr) => {
     const d = new Date(timeStr);
     return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
   };

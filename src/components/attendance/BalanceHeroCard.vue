@@ -33,14 +33,14 @@
   </section>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { computed } from 'vue';
 
-const props = defineProps<{
-  balance: number;
-  max: number;
-  isAtRisk: boolean;
-}>();
+const props = defineProps({
+  balance: { type: Number, required: true },
+  max: { type: Number, required: true },
+  isAtRisk: { type: Boolean, required: true }
+});
 
 const pct = computed(() =>
   Math.min(100, Math.max(0, (props.balance / props.max) * 100))

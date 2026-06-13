@@ -43,43 +43,35 @@
   </div>
 </template>
 
-<script setup lang="ts">
-interface LedgerEntry {
-  id?: number | string;
-  delta: number;
-  balance_after?: number;
-  reason?: string;
-  created_at: string;
-}
+<script setup>
+defineProps({
+  entries: { type: Array, required: true }
+});
 
-defineProps<{
-  entries: LedgerEntry[];
-}>();
-
-function formatDate(dateStr: string): string {
+function formatDate(dateStr) {
   if (!dateStr) return '';
   const d = new Date(dateStr);
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-function formatDay(dateStr: string): string {
+function formatDay(dateStr) {
   if (!dateStr) return '';
   const d = new Date(dateStr);
   return d.toLocaleDateString('en-US', { weekday: 'short' });
 }
 
-function formatDelta(delta: number): string {
+function formatDelta(delta) {
   if (delta == null) return '—';
   return delta >= 0 ? `+${delta} pts` : `${delta} pts`;
 }
 
-function dotClass(delta: number): string {
+function dotClass(delta) {
   if (delta < 0) return 'dot--danger';
   if (delta > 0) return 'dot--success';
   return 'dot--neutral';
 }
 
-function dotLabel(delta: number): string {
+function dotLabel(delta) {
   if (delta < 0) return 'Deduction';
   if (delta > 0) return 'Credit';
   return 'Event';

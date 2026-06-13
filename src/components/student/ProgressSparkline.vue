@@ -1,10 +1,10 @@
-<script setup lang="ts">
+<script setup>
 import { computed } from 'vue'
 
-const props = defineProps<{
-  timeline: { week: number; running_total: number }[]
-  maxTotal: number
-}>()
+const props = defineProps({
+  timeline: { type: Array, required: true },
+  maxTotal: { type: Number, required: true }
+})
 
 const points = computed(() => {
   const len = props.timeline.length

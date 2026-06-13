@@ -1,11 +1,11 @@
-<script setup lang="ts">
+<script setup>
 import { computed, ref, onMounted } from 'vue'
 
-const props = defineProps<{
-  total: number
-  max: number
-  gradeLetter: string
-}>()
+const props = defineProps({
+  total: { type: Number, required: true },
+  max: { type: Number, required: true },
+  gradeLetter: { type: String, default: '' }
+})
 
 const isMounted = ref(false)
 
