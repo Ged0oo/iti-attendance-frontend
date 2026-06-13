@@ -160,8 +160,8 @@ function runConfirm() {
           <span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Period end</span>
           <input v-model="period.end" type="date" class="h-11 rounded-lg border border-outline-variant bg-surface px-3 font-body-md text-body-md focus:border-primary-container focus:ring-1 focus:ring-primary-container" />
         </label>
-        <button class="h-11 px-5 rounded-lg bg-primary-container text-white font-label text-label flex items-center gap-2 hover:bg-primary transition-colors shadow-elevated" @click="calculate">
-          <span class="material-symbols-outlined text-[18px]">calculate</span> Calculate
+        <button :disabled="busy" class="h-11 px-5 rounded-lg bg-primary-container text-white font-label text-label flex items-center gap-2 hover:bg-primary transition-colors shadow-elevated disabled:opacity-60" @click="calculate">
+          <span class="material-symbols-outlined text-[18px]">calculate</span> {{ busy ? 'Calculating…' : 'Calculate' }}
         </button>
       </div>
 

@@ -234,15 +234,12 @@ async function createLabGroup() {
     return
   }
   error.value = ''
+  const payload = { cohort_id: cohortId.value, course_id: f.course_id, instructor_id: f.instructor_id, name: f.name.trim() }
+  // clear the form now so a second click fails validation (no duplicate group)
+  labForm.value = { name: '', course_id: '', instructor_id: '' }
   try {
-    const lg = await store.createLabGroup({
-      cohort_id: cohortId.value,
-      course_id: f.course_id,
-      instructor_id: f.instructor_id,
-      name: f.name.trim(),
-    })
+    const lg = await store.createLabGroup(payload)
     labGroups.value.unshift(lg)
-    labForm.value = { name: '', course_id: '', instructor_id: '' }
   } catch (e) {
     error.value = store.error || 'Could not create the lab group.'
   }

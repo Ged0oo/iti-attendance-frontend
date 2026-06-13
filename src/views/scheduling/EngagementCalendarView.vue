@@ -49,6 +49,7 @@ const loadingSessions = ref(false)
 const scheduleOpen = ref(false)
 const editingId = ref(null) // engagement id when the modal is in edit mode
 const modalError = ref('') // shown inside the schedule dialog, not on the page
+const submitting = ref(false) // guards against double-submitting the dialog
 const blankSchedule = () => ({ course_id: '', instructor_id: '', type: 'lecture', date_range_start: '', date_range_end: '', scheduled_hours: 10 })
 const scheduleForm = ref(blankSchedule())
 
@@ -162,6 +163,8 @@ async function submitSchedule() {
     modalError.value = 'End date must be on or after the start date.'
     return
   }
+  if (submitting.value) return // ignore a second click while the first is in flight
+  submitting.value = true
   const payload = {
     cohort_id: cohortId.value,
     type: f.type,
@@ -184,6 +187,8 @@ async function submitSchedule() {
     closeSchedule()
   } catch (e) {
     modalError.value = store.error || (editingId.value ? 'Could not update the engagement.' : 'Could not schedule the engagement.')
+  } finally {
+    submitting.value = false
   }
 }
 
@@ -387,7 +392,7 @@ function runConfirm() {
             </label>
             <div class="col-span-2 flex justify-end gap-3 mt-2">
               <button type="button" class="h-11 px-5 rounded-lg font-label text-label text-on-surface-variant hover:bg-surface-sunken" @click="closeSchedule()">Cancel</button>
-              <button type="submit" class="h-11 px-5 rounded-lg bg-primary-container text-white font-label text-label hover:bg-primary transition-colors">{{ editingId ? 'Save changes' : 'Schedule' }}</button>
+              <button type="submit" :disabled="submitting" class="h-11 px-5 rounded-lg bg-primary-container text-white font-label text-label hover:bg-primary transition-colors disabled:opacity-60">{{ submitting ? 'Saving…' : (editingId ? 'Save changes' : 'Schedule') }}</button>
             </div>
           </form>
         </div>
