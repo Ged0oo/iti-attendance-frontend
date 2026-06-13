@@ -452,9 +452,9 @@ function runConfirm() {
                 </li>
               </ul>
 
-              <!-- generate (only when empty, so we never create duplicate sessions) -->
-              <p v-if="sessions.length" class="font-body-sm text-body-sm text-on-surface-variant">Delete the sessions above to regenerate with different times.</p>
-              <form v-else class="rounded-lg border border-surface-variant p-3 flex flex-wrap items-end gap-2" @submit.prevent="submitGenerate">
+              <!-- generate fills any day in the range that has no session yet (no duplicates) -->
+              <form class="rounded-lg border border-surface-variant p-3 flex flex-wrap items-end gap-2" @submit.prevent="submitGenerate">
+                <p v-if="sessions.length" class="w-full font-body-sm text-body-sm text-on-surface-variant">Adds a session for any day in the range that doesn't have one.</p>
                 <label class="flex flex-col gap-1">
                   <span class="font-label text-label text-on-surface-variant">Start</span>
                   <input v-model="genForm.start_time" type="time" class="h-9 rounded-lg border border-outline-variant bg-surface px-2 font-mono text-mono" />
