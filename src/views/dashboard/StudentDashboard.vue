@@ -5,8 +5,8 @@
       <div class="header-left">
         <div class="greeting-row">
           <h1 class="greeting">Good morning, {{ authStore.user?.name || 'Student' }} <span class="animate-wave inline-block">👋</span></h1>
-          <span v-if="authStore.studentProfile?.cohort" class="cohort-badge">
-            {{ authStore.studentProfile.cohort.name }}
+          <span v-if="authStore.user?.cohort" class="cohort-badge">
+            {{ authStore.user?.cohort?.name }}
           </span>
         </div>
         <p class="subtitle">Here is your daily academic overview.</p>
@@ -210,8 +210,8 @@ onMounted(async () => {
       await authStore.fetchMe();
     }
     
-    const studentId = authStore.studentId;
-    const cohortId = authStore.cohortId;
+    const studentId = authStore.user?.student_id;
+    const cohortId = authStore.user?.cohort_id;
 
     if (studentId) {
       // Don't await here directly if we want parallel fetching
@@ -270,7 +270,7 @@ onMounted(async () => {
     }
 
     await Promise.allSettled(promises);
-  } catch (err) {
+  } catch {
     // silently fail on dashboard load
   } finally {
     isLoading.value = false;

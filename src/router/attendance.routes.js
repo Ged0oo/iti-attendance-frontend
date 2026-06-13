@@ -8,7 +8,7 @@ export default [
     {
         path: '/attendance/ledger',
         name: 'student-ledger',
-        component: () => import('@/views/excuses/LedgerBalanceView.vue'),
+        component: () => import('@/views/attendance/LedgerBalanceView.vue'),
         meta: { requiresAuth: true }
     },
     {
@@ -28,5 +28,11 @@ export default [
             requiresAuth: true, 
             allowedRoles: ['instructor', 'track_admin', 'branch_manager'] 
         }
+    },
+    {
+        path: '/student/grades',
+        name: 'student-grade-card',
+        component: () => import('@/views/dashboard/StudentGradeCardView.vue'),
+        meta: { requiresAuth: true, roles: ['student'] }
     }
 ];

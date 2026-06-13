@@ -3,63 +3,25 @@
   <div class="flex min-h-screen w-full">
     <!-- Left Panel (Brand/Identity) -->
     <div
-      class="hidden lg:flex w-[45%] bg-[#1A0A0A] relative flex-col justify-center items-center p- margin-desktop overflow-hidden border-r border-shell-border"
+      class="hidden lg:flex w-[45%] bg-[#1A0A0A] relative flex-col justify-center items-center overflow-hidden border-r border-shell-border"
     >
+      <!-- Background Image with Red Overlay -->
+      <img src="@/assets/iti-building.png" alt="ITI Building Background" class="absolute inset-0 w-full h-full object-cover z-0" />
+      <div class="absolute inset-0 bg-[#8B1A1A]/80 z-0 mix-blend-multiply"></div>
+      
       <!-- Subtle Radial Glow -->
       <div
-        class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(168,32,32,0.15)_0%, rgba(26,10,10,0)_60%)] z-0"
+        class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(168,32,32,0.4)_0%,_rgba(26,10,10,0)_70%)] z-0"
       ></div>
       <div
         class="relative z-10 max-w-md w-full flex flex-col items-center text-center space-y-8"
       >
-        <!-- Logo Monogram -->
-        <img
-          alt="ITI Monogram Logo"
-          class="w-24 h-24 rounded-lg shadow-xl shadow-black/50"
-          src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAGSklEQVR4AezTa3IiNxSGYU+     
-  WMfucVWSf3kZS+UGFsXuAFmrpXB5XuYBGOpf34/3rwx8CCPyRAEH+                                                  
-
-iMYXCHx8EMSvAIEHBAjyAI6vECCI3wACDwhcKMiDrr5CIAkBgiQJyph7CBBkD3ddkxAgSJKgjLmHAEH2cNc1CYGcgiSBa8z8BAiSP0MbXEi
-AIBfCVTo/AYLkz9AGFxIgyIVwlc5PgCBfMvQRgXsCBLmn4T0CXwgQ5AsQHxG4J0CQexreI/CFAEG+
-
-APERgXsCBLmnce171RMSIEjC0Iy8jgBB1rHWKSEBgiQMzcjrCBBkHWudEhIgSMLQvo/syVUECHIVWXVLECBIiRgtcRUBglxFVt0SBAhSIkZ
-LXEWAIFeRrVK3+
-  R4Eaf4DsP5jAgR5zMe3zQkQpPkPwPqPCRDkMR/fNidAkOY/gJ3rZ+                                                  
-  hNkAwpmXEbAYJsQ69xBgIEyZCSGbcRIMg29BpnIBBekL9//vzHf10GF0kyrWx4QaZtqhACAwQIMgDNlT4ECNIna5sOECDIADRX+    
-  hAgSJ+                                                                                                 
-
-sbTpA4LsgA0VcQaAqAYJUTdZeUwgQZApGRaoSIEjVZO01hQBBpmBUpCqBpYJUhWivugQIUjdbm00gQJAJEJWoS4AgdbO12QQCBJkAUYm6BK
-oIUjchm20lQJCt+
-  DWPToAg0RMy31YCBNmKX/PoBAjyZkK/Pj9/vPL/Zptv11/p+d+Zbxc9OEWAIE9xOdCZAEE6p2/3pwQI8hSRA50JEKRz+           
-
-nZ/SoAgTxE50JkAQXamr3d4AgQJH5EBdxIgyE76eocnQJDwERlwJwGC7KSvd3gCBAkf0diAbs0hQJA5HFUpSoAgRYO11hwCBJnDUZWiBAhS
-NFhrzSFAkDkcO1VptStBWsVt2bMECHKWmPOtCBCkVdyWPUuAIGeJOd+
-
-KAEFaxR192XjzESReJiYKRIAggcIwSjwCBImXiYkCESBIoDCMEo8AQeJlYqIrCAzWJMggONd6ECBIj5xtOUiAIIPgXOtBgCA9crblIAGCDI
-JzrQeBVwTpQcKWCBwQIMgBFI8QuBEgyI2EVwQOCBDkAIpHCNwIEORGwisCBwQ2C3IwkUcIBCJAkEBhGCUeAYLEy8REgQgQJFAYRolHgCDxM
-jFRIAJ1BQkE2Sh5CRAkb3YmX0CAIAsga5GXAEHyZmfyBQQIsgCyFnkJEGQgO1f6ECBIn6xtOkCAIAPQXOlDgCB9srbpAAGCDEBzpQ8BgsTK
-2jTBCBAkWCDGiUWAILHyME0wAgQJFohxYhEgSKw8TBOMAEGCBXLdOCqPECDICDV32hAgSJuoLTpCgCAj1NxpQ4AgbaK26AgBgoxQc+
-  d3AoU/EaRwuFZ7nwBB3meoQmECBCkcrtXeJ0CQ9xmqUJgAQQqHW2G13TsQZHcC+                                        
-
-ocmQJDQ8RhuNwGC7E5A/9AECBI6HsPtJkCQ3Qnov4vAS30J8hImh7oSIEjX5O39EgGCvITJoa4ECNI1eXu/RIAgL2FyqCuBMUG60rJ3OwIE
-aRe5hc8QIMgZWs62I0CQdpFb+
-  AwBgpyh5Ww7AuEEaZeAhUMTIEjoeAy3mwBBdiegf2gCBAkdj+                                                      
-
-F2EyDI7gT0D02gkyChgzBcTAIEiZmLqYIQIEiQIIwRkwBBYuZiqiAECBIkCGPEJECQKbkoUpUAQaoma68pBAgyBaMiVQkQpGqy9ppCgCBTM
-CpSlQBBoidrvq0ECLIVv+
-  bRCYQX5Nfn54/I/68GPHuHXX137fHqvrPPhRdk9sLqIXCGAEHO0HK2HQGCtIv8/4W9e06AIM8ZOdGYAEEah2/15wQI8pyRE40JEKRx+
-
-FZ/ToAgzxk5cZ5AmRsEKROlRa4gQJArqKpZhgBBykRpkSsIEOQKqmqWIUCQMlF2WWTtngRZy1u3ZAQIkiww464lQJC1vHVLRoAgyQIz7loC
-BFnLW7fIBA5mI8gBFI8QuBEgyI2EVwQOCBDkAIpHCNwIEORGwisCBwQIcgDFIwRuBGYJcqvnFYFSBAhSKk7LzCZAkNlE1StFgCCl4rTMbAI
-EmU1UvVIEEghSirdlkhEgSLLAjLuWAEHW8tYtGQGCJAvMuGsJEGQtb92SEegtSLKwjLueAEHWM9cxEQGCJArLqOsJEGQ9cx0TESBIorCMup
-4AQS5irmwNAv8CAAD//w8BwbIAAAAGSURBVAMAJTLhoJfSZNkAAAAASUVORK5CYII="
-        />
         <!-- Typography Group -->
         <div class="space-y-4">
-          <h1 class="font-h1 text-h1 text-white">
+          <h1 class="font-h1 text-h1 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
             Information Technology Institute
           </h1>
-          <p class="font-body-lg text-body-lg text-white/70 max-w-sm mx-auto">
+          <p class="font-body-lg text-body-lg text-white/80 max-w-sm mx-auto drop-shadow-md">
             Powering Egypt's tech talent — one cohort at a time.
           </p>
         </div>
@@ -103,48 +65,6 @@ EmU1UvVIEEghSirdlkhEgSLLAjLuWAEHW8tYtGQGCJAvMuGsJEGQtb92SEegtSLKwjLueAEHWM9cxEQG
       <div
         class="lg:hidden absolute top-8 left-margin-mobile flex items-center space-x-3"
       >
-        <img
-          alt="ITI Monogram Logo"
-          class="w-10 h-10 rounded shadow-sm"
-          src="data:image/png;base64, 
-  iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAGSklEQVR4AezTa3IiNxSGYU+WMfucVWSf3kZS+                  
-  UGFsXuAFmrpXB5XuYBGOpf34/3rwx8CCPyRAEH+                                                                
-
-iMYXCHx8EMSvAIEHBAjyAI6vECCI3wACDwhcKMiDrr5CIAkBgiQJyph7CBBkD3ddkxAgSJKgjLmHAEH2cNc1CYGcgiSBa8z8BAiSP0MbXEi
-AIBfCVTo/AYLkz9AGFxIgyIVwlc5PgCBfMvQRgXsCBLmn4T0CXwgQ5AsQHxG4J0CQexreI/CFAEG+
-
-APERgXsCBLmnce171RMSIEjC0Iy8jgBB1rHWKSEBgiQMzcjrCBBkHWudEhIgSMLQvo/syVUECHIVWXVLECBIiRgtcRUBglxFVt0SBAhSIkZ
-LXEWAIFeRrVK3+
-  R4Eaf4DsP5jAgR5zMe3zQkQpPkPwPqPCRDkMR/fNidAkOY/gJ3rZ+                                                  
-  hNkAwpmXEbAYJsQ69xBgIEyZCSGbcRIMg29BpnIBBekL9//vzHf10GF0kyrWx4QaZtqhACAwQIMgDNlT4ECNIna5sOECDIADRX+    
-  hAgSJ+                                                                                                 
-
-sbTpA4LsgA0VcQaAqAYJUTdZeUwgQZApGRaoSIEjVZO01hQBBpmBUpCqBpYJUhWivugQIUjdbm00gQJAJEJWoS4AgdbO12QQCBJkAUYm6BK
-oIUjchm20lQJCt+
-  DWPToAg0RMy31YCBNmKX/PoBAjyZkK/Pj9/vPL/Zptv11/p+d+Zbxc9OEWAIE9xOdCZAEE6p2/3pwQI8hSRA50JEKRz+           
-
-nZ/SoAgTxE50JkAQXamr3d4AgQJH5EBdxIgyE76eocnQJDwERlwJwGC7KSvd3gCBAkf0diAbs0hQJA5HFUpSoAgRYO11hwCBJnDUZWiBAhS
-NFhrzSFAkDkcO1VptStBWsVt2bMECHKWmPOtCBCkVdyWPUuAIGeJOd+
-
-KAEFaxR192XjzESReJiYKRIAggcIwSjwCBImXiYkCESBIoDCMEo8AQeJlYqIrCAzWJMggONd6ECBIj5xtOUiAIIPgXOtBgCA9crblIAGCDI
-JzrQeBVwTpQcKWCBwQIMgBFI8QuBEgyI2EVwQOCBDkAIpHCNwIEORGwisCBwQ2C3IwkUcIBCJAkEBhGCUeAYLEy8REgQgQJFAYRolHgCDxM
-jFRIAJ1BQkE2Sh5CRAkb3YmX0CAIAsga5GXAEHyZmfyBQQIsgCyFnkJEGQgO1f6ECBIn6xtOkCAIAPQXOlDgCB9srbpAAGCDEBzpQ8BgsTK
-2jTBCBAkWCDGiUWAILHyME0wAgQJFohxYhEgSKw8TBOMAEGCBXLdOCqPECDICDV32hAgSJuoLTpCgCAj1NxpQ4AgbaK26AgBgoxQc+
-  d3AoU/EaRwuFZ7nwBB3meoQmECBCkcrtXeJ0CQ9xmqUJgAQQqHW2G13TsQZHcC+                                        
-
-ocmQJDQ8RhuNwGC7E5A/9AECBI6HsPtJkCQ3Qnov4vAS30J8hImh7oSIEjX5O39EgGCvITJoa4ECNI1eXu/RIAgL2FyqCuBMUG60rJ3OwIE
-aRe5hc8QIMgZWs62I0CQdpFb+
-  AwBgpyh5Ww7AuEEaZeAhUMTIEjoeAy3mwBBdiegf2gCBAkdj+                                                      
-
-F2EyDI7gT0D02gkyChgzBcTAIEiZmLqYIQIEiQIIwRkwBBYuZiqiAECBIkCGPEJECQKbkoUpUAQaoma68pBAgyBaMiVQkQpGqy9ppCgCBTM
-CpSlQBBoidrvq0ECLIVv+
-  bRCYQX5Nfn54/I/68GPHuHXX137fHqvrPPhRdk9sLqIXCGAEHO0HK2HQGCtIv8/4W9e06AIM8ZOdGYAEEah2/15wQI8pyRE40JEKRx+
-
-FZ/ToAgzxk5cZ5AmRsEKROlRa4gQJArqKpZhgBBykRpkSsIEOQKqmqWIUCQMlF2WWTtngRZy1u3ZAQIkiww464lQJC1vHVLRoAgyQIz7loC
-BFnLW7fIBA5mI8gBFI8QuBEgyI2EVwQOCBDkAIpHCNwIEORGwisCBwQIcgDFIwRuBGYJcqvnFYFSBAhSKk7LzCZAkNlE1StFgCCl4rTMbAI
-EmU1UvVIEEghSirdlkhEgSLLAjLuWAEHW8tYtGQGCJAvMuGsJEGQtb92SEegtSLKwjLueAEHWM9cxEQGCJArLqOsJEGQ9cx0TESBIorCMup
-4AQS5irmwNAv8CAAD//w8BwbIAAAAGSURBVAMAJTLhoJfSZNkAAAAASUVORK5CYII="
-        />
         <span class="font-h3 text-h3 text-on-surface">ITI Portal</span>
       </div>
 

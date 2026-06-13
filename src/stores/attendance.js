@@ -30,7 +30,7 @@ export const useAttendanceStore = defineStore('attendance', {
                     student_id: studentId
                 });
                 
-                const responseData = response.data.data || response.data;
+                const responseData = response.data?.data || response.data;
                 
                 // Force the message to be a string
                 let displayMessage = 'Scan successful!';
@@ -97,7 +97,8 @@ export const useAttendanceStore = defineStore('attendance', {
                     message: errorMsg
                 };
                 this.lastScan = this.lastScanResult; // For backward compatibility
-                throw this.lastScanResult;
+                // We do not throw to satisfy "[never throws]" requirement
+                return this.lastScanResult;
             } finally {
                 this.loading = false;
                 this.isProcessing = false;

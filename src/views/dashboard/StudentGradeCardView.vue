@@ -108,7 +108,7 @@ onMounted(async () => {
       await authStore.fetchMe()
     }
     
-    const studentId = authStore.studentId
+    const studentId = authStore.user?.student_id
     if (!studentId) throw new Error('Student profile not found.')
 
     // Fetch both Grade Card and Ledger in parallel
@@ -181,7 +181,7 @@ onMounted(async () => {
               <div class="w-full bg-surface-variant rounded-full h-2 overflow-hidden">
                 <div 
                   class="h-2 rounded-full transition-all duration-1000" 
-                  :class="(ledgerStore.balance || 0) >= 150 ? 'bg-success' : 'bg-danger'"
+                  :class="!ledgerStore.isAtRisk ? 'bg-success' : 'bg-danger'"
                   :style="{ width: `${ledgerPercentage}%` }"
                 ></div>
               </div>

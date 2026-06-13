@@ -79,7 +79,7 @@ const hasDeductions = computed(() =>
 );
 
 function goToExcuse() {
-  router.push({ name: 'ExcuseForm' });
+  router.push({ name: 'submit-excuse' });
 }
 
 onMounted(async () => {
@@ -87,7 +87,7 @@ onMounted(async () => {
     await authStore.fetchMe();
   }
 
-  const studentId = authStore.studentId;
+  const studentId = authStore.user?.student_id;
   if (studentId) {
     await ledgerStore.fetchLedger(studentId);
   }

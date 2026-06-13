@@ -2,6 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-primary: #8B1A1A;
+  --color-primary-deep: #6B1212;
+  --color-primary-mist: #F9EAEA;
+  --color-shell: #1A0A0A;
+  --color-canvas: #F7F7F7;
+  --color-surface: #FFFFFF;
+  --color-success: #059669;
+  --color-success-mist: #ECFDF5;
+  --color-warning: #D97706;
+  --color-warning-mist: #FFFBEB;
+  --color-danger: #DC2626;
+  --color-danger-mist: #FEF2F2;
+  --color-text: #1A1A2E;
+  --color-text-secondary: #6B7280;
+  --role-bm: #7C3AED;
+  --role-ta: #0369A1;
+  --role-instructor: #0D9488;
+  --role-student: #6B7280;
+}
+
+
 body {
   background-color: #F7F7F7;
   color: #251817;

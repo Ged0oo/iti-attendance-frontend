@@ -17,7 +17,7 @@ onMounted(() => {
 })
 
 const percentage = computed(() => {
-  const max = props.courseObj.course.max_score || 1
+  const max = props.courseObj.course?.max_score || 1
   return Math.min(100, Math.max(0, (props.courseObj.total_score / max) * 100))
 })
 
