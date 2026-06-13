@@ -545,12 +545,17 @@ function openCreate() {
 }
 
 const filteredUsers = computed(() => {
-  const q = searchQuery.value.toLowerCase();
-  if (!q) return userStore.users;
-  return userStore.users.filter(
-    (u) =>
-      u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q),
-  );
+  return userStore.users;
+});
+
+let searchTimeout = null;
+
+watch(searchQuery, () => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+
+  searchTimeout = setTimeout(() => {
+    fetchPage(1);
+  }, 400);
 });
 
 watch(roleFilter, () => {
@@ -586,7 +591,11 @@ function canEditUser(targetUser) {
 async function fetchPage(page) {
   currentPage.value = page;
   const params = { page };
+
   if (roleFilter.value !== "all") params.role = roleFilter.value;
+
+  if (searchQuery.value) params.search = searchQuery.value;
+
   await userStore.fetchUsers(params);
 }
 
