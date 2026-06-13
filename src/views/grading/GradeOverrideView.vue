@@ -1,4 +1,9 @@
+<script setup>
+import MainLayout from '../../components/layout/MainLayout.vue';
+</script>
+
 <template>
+    <MainLayout title="Grade Override">
     <section class="mx-auto max-w-4xl space-y-6">
         <div class="rounded-xl border border-[#D97706]/20 bg-[#FFFBEB] p-6 shadow-sm">
             <p class="text-sm font-semibold uppercase tracking-wide text-[#D97706]">Skipped - no dedicated design</p>
@@ -15,4 +20,5 @@
             </RouterLink>
         </div>
     </section>
+    </MainLayout>
 </template>

@@ -2,6 +2,7 @@
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useGradingStore } from '../../stores/grading';
+import MainLayout from '../../components/layout/MainLayout.vue';
 
 const grading = useGradingStore();
 const { grades, courses, components, labGroups, loading, saving, error } = storeToRefs(grading);
@@ -142,6 +143,7 @@ onMounted(async () => {
 </script>
 
 <template>
+    <MainLayout title="Grade Entry">
     <section class="mx-auto max-w-7xl space-y-6">
         <div class="flex flex-col gap-2">
             <p class="text-sm font-semibold uppercase tracking-wide text-primary-container">Instructor grading sheet</p>
@@ -294,4 +296,5 @@ onMounted(async () => {
             </div>
         </div>
     </section>
+    </MainLayout>
 </template>
