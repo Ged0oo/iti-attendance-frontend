@@ -17,6 +17,8 @@ export const useAuthStore = defineStore('auth', {
             this.loading = true;
             this.error = null;
 
+            console.log(import.meta.env.VITE_API_BASE_URL);
+
             try {
                 const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/login`, {
                     email,
