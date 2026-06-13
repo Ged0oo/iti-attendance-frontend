@@ -439,7 +439,8 @@ function runConfirm() {
                   <div class="flex items-center gap-3 shrink-0">
                     <span v-if="s.is_delivered" class="flex items-center gap-1 font-label text-label text-success"><span class="material-symbols-outlined text-[16px]">check_circle</span>Delivered</span>
                     <button v-else class="font-label text-label text-primary-container hover:text-primary" @click="markDelivered(s)">Mark delivered</button>
-                    <button class="text-on-surface-variant hover:text-danger transition-colors" title="Delete session" @click="requestRemoveSession(s)">
+                    <!-- a delivered session is done and billed, so it cannot be deleted -->
+                    <button v-if="!s.is_delivered" class="text-on-surface-variant hover:text-danger transition-colors" title="Delete session" @click="requestRemoveSession(s)">
                       <span class="material-symbols-outlined text-[18px]">delete</span>
                     </button>
                   </div>
