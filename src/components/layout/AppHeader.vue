@@ -35,25 +35,6 @@ const badge = computed(() => roleBadges[userRole.value] || null)
     </div>
 
     <div class="flex items-center gap-6">
-      <div class="relative hidden lg:block w-64">
-        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
-        <input
-          class="w-full h-10 pl-10 pr-4 rounded-lg bg-surface-sunken border-transparent focus:border-primary focus:ring-1 focus:ring-primary focus:bg-surface text-body-sm font-body-sm transition-all outline-none text-on-surface placeholder:text-on-surface-variant"
-          placeholder="Search..."
-          type="text"
-        />
-      </div>
-
-      <div class="flex items-center gap-2">
-        <button class="p-2 rounded-full text-secondary hover:text-primary hover:bg-primary-mist transition-colors relative active:scale-95 duration-150">
-          <span class="material-symbols-outlined">notifications</span>
-          <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-danger"></span>
-        </button>
-        <button class="p-2 rounded-full text-secondary hover:text-primary hover:bg-primary-mist transition-colors active:scale-95 duration-150">
-          <span class="material-symbols-outlined">help_outline</span>
-        </button>
-      </div>
-
       <slot name="action" />
     </div>
   </header>

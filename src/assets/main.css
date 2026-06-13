@@ -56,3 +56,9 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #8c716e;
 }
+
+button:disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+}
