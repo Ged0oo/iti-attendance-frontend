@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import MainLayout from '../../components/layout/MainLayout.vue'
 import { useAuth } from '../../composables/useAuth'
 import { useCohortStore } from '../../stores/cohort'
+import api from '@/services/api'
 import { initials, statusColors } from '../../composables/useUtils'
 
 const store = useCohortStore()
@@ -29,6 +30,86 @@ const selected = computed(() =>
   store.tracks.find((t) => t.id === selectedId.value) || store.tracks[0] || null,
 )
 
+const showAddTrack = ref(false)
+const addTrackForm = ref({ name: '', description: '', branch_id: '' })
+const addTrackError = ref(null)
+const addTrackLoading = ref(false)
+const branches = ref([])
+
+async function fetchBranches() {
+  try {
+    const res = await api.get('/api/branches')
+    branches.value = res.data?.data || res.data || []
+  } catch (e) { /* ignore */ }
+}
+
+async function addTrack() {
+  addTrackError.value = null
+  addTrackLoading.value = true
+  try {
+    const created = await store.createTrack({
+      ...addTrackForm.value,
+      branch_id: Number(addTrackForm.value.branch_id),
+    })
+    showAddTrack.value = false
+    addTrackForm.value = { name: '', description: '', branch_id: '' }
+    await selectTrack(created.id)
+  } catch (e) {
+    addTrackError.value = e.response?.data?.message || 'Failed to create track'
+  }
+  addTrackLoading.value = false
+}
+
+const showEditTrack = ref(false)
+const editTrackForm = ref({ name: '', description: '' })
+const editTrackError = ref(null)
+const editTrackLoading = ref(false)
+
+function openEditTrack() {
+  if (!selected.value) return
+  editTrackForm.value = { name: selected.value.name, description: selected.value.description || '' }
+  editTrackError.value = null
+  showEditTrack.value = true
+}
+
+async function saveEditTrack() {
+  editTrackError.value = null
+  editTrackLoading.value = true
+  try {
+    await store.updateTrack(selected.value.id, editTrackForm.value)
+    showEditTrack.value = false
+  } catch (e) {
+    editTrackError.value = e.response?.data?.message || 'Failed to update track'
+  }
+  editTrackLoading.value = false
+}
+
+const showAssignAdmin = ref(false)
+const assignEmail = ref('')
+const assignError = ref(null)
+const assignLoading = ref(false)
+
+async function assignAdmin() {
+  assignError.value = null
+  assignLoading.value = true
+  try {
+    await store.assignTrackAdmin(selected.value.id, assignEmail.value)
+    admins.value = await store.fetchTrackAdmins(selected.value.id)
+    showAssignAdmin.value = false
+    assignEmail.value = ''
+  } catch (e) {
+    assignError.value = e.response?.data?.message || 'Failed to assign admin'
+  }
+  assignLoading.value = false
+}
+
+async function removeAdmin(userId) {
+  try {
+    await store.removeTrackAdmin(selected.value.id, userId)
+    admins.value = admins.value.filter((a) => (a.user_id || a.id) !== userId)
+  } catch (e) { /* ignore */ }
+}
+
 async function selectTrack(id) {
   selectedId.value = id
   admins.value = await store.fetchTrackAdmins(id)
@@ -44,7 +125,7 @@ function fmtDate(d) {
 }
 
 onMounted(async () => {
-  await Promise.all([store.fetchTracks(), store.fetchCohorts()])
+  await Promise.all([store.fetchTracks(), store.fetchCohorts(), fetchBranches()])
   if (store.tracks.length) await selectTrack(store.tracks[0].id)
 })
 </script>
@@ -60,6 +141,7 @@ onMounted(async () => {
               v-if="canManage"
               class="bg-primary text-white p-2 rounded-lg flex items-center justify-center hover:bg-primary-deep transition-all active:scale-95 shadow-md"
               title="New Track"
+              @click="showAddTrack = true"
             >
               <span class="material-symbols-outlined">add</span>
             </button>
@@ -109,7 +191,7 @@ onMounted(async () => {
               </div>
             </div>
             <div v-if="canManage" class="flex gap-3">
-              <button class="px-6 py-2 border-[1.5px] border-primary text-primary font-bold font-label text-label rounded-lg hover:bg-primary-mist transition-colors">Edit Track</button>
+              <button class="px-6 py-2 border-[1.5px] border-primary text-primary font-bold font-label text-label rounded-lg hover:bg-primary-mist transition-colors" @click="openEditTrack">Edit Track</button>
             </div>
           </div>
 
@@ -186,11 +268,20 @@ onMounted(async () => {
                 </div>
                 <p class="font-body-md text-body-md font-bold text-on-surface">{{ a.user?.name || 'Unknown' }}</p>
                 <p class="text-[11px] text-role-ta font-bold uppercase tracking-wide">Track Admin</p>
+                <button
+                  v-if="canManage"
+                  class="mt-2 text-on-surface-variant hover:text-danger transition-colors"
+                  title="Remove Admin"
+                  @click="removeAdmin(a.user_id || a.id)"
+                >
+                  <span class="material-symbols-outlined text-[16px]">close</span>
+                </button>
               </div>
 
               <button
                 v-if="canManage"
                 class="border-2 border-dashed border-surface-container-highest rounded-xl flex flex-col items-center justify-center py-6 text-on-surface-variant hover:border-primary hover:text-primary transition-all"
+                @click="showAssignAdmin = true"
               >
                 <span class="material-symbols-outlined text-[32px] mb-1">person_add</span>
                 <span class="font-label text-label">Assign New</span>
@@ -206,6 +297,78 @@ onMounted(async () => {
           Select a track to view details.
         </div>
       </section>
+    </div>
+    <!-- Add Track Modal -->
+    <div v-if="showAddTrack" class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center" @click.self="showAddTrack = false">
+      <div class="bg-surface rounded-xl shadow-lg w-full max-w-md p-6">
+        <h3 class="font-h3 text-h3 text-on-surface mb-4">New Track</h3>
+        <p v-if="addTrackError" class="text-danger font-body-sm text-body-sm mb-3 bg-danger-mist border border-danger/20 rounded-lg px-4 py-2">{{ addTrackError }}</p>
+        <div class="flex flex-col gap-4">
+          <div class="flex flex-col gap-2">
+            <label class="font-label text-label text-on-surface-variant">Track Name</label>
+            <input v-model="addTrackForm.name" type="text" placeholder="e.g. Open Source" class="h-11 rounded-lg border border-outline-variant bg-surface px-4 font-body-md text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none" />
+          </div>
+          <div class="flex flex-col gap-2">
+            <label class="font-label text-label text-on-surface-variant">Branch</label>
+            <select v-model="addTrackForm.branch_id" class="h-11 rounded-lg border border-outline-variant bg-surface px-4 font-body-md text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+              <option value="" disabled>Select a branch</option>
+              <option v-for="b in branches" :key="b.id" :value="b.id">{{ b.name }}</option>
+            </select>
+          </div>
+          <div class="flex flex-col gap-2">
+            <label class="font-label text-label text-on-surface-variant">Description</label>
+            <textarea v-model="addTrackForm.description" rows="3" placeholder="Optional description" class="rounded-lg border border-outline-variant bg-surface px-4 py-3 font-body-md text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none"></textarea>
+          </div>
+        </div>
+        <div class="flex justify-end gap-3 mt-6">
+          <button class="px-5 py-2.5 rounded-lg font-label text-label text-on-surface-variant hover:bg-surface-sunken transition-colors" @click="showAddTrack = false">Cancel</button>
+          <button class="px-5 py-2.5 rounded-lg font-label text-label bg-primary text-white hover:bg-primary-deep transition-colors shadow-sm" :disabled="!addTrackForm.name || !addTrackForm.branch_id || addTrackLoading" :class="{ 'opacity-50 cursor-not-allowed': !addTrackForm.name || !addTrackForm.branch_id || addTrackLoading }" @click="addTrack">
+            {{ addTrackLoading ? 'Creating...' : 'Create' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Track Modal -->
+    <div v-if="showEditTrack" class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center" @click.self="showEditTrack = false">
+      <div class="bg-surface rounded-xl shadow-lg w-full max-w-md p-6">
+        <h3 class="font-h3 text-h3 text-on-surface mb-4">Edit Track</h3>
+        <p v-if="editTrackError" class="text-danger font-body-sm text-body-sm mb-3 bg-danger-mist border border-danger/20 rounded-lg px-4 py-2">{{ editTrackError }}</p>
+        <div class="flex flex-col gap-4">
+          <div class="flex flex-col gap-2">
+            <label class="font-label text-label text-on-surface-variant">Track Name</label>
+            <input v-model="editTrackForm.name" type="text" class="h-11 rounded-lg border border-outline-variant bg-surface px-4 font-body-md text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none" />
+          </div>
+          <div class="flex flex-col gap-2">
+            <label class="font-label text-label text-on-surface-variant">Description</label>
+            <textarea v-model="editTrackForm.description" rows="3" class="rounded-lg border border-outline-variant bg-surface px-4 py-3 font-body-md text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none resize-none"></textarea>
+          </div>
+        </div>
+        <div class="flex justify-end gap-3 mt-6">
+          <button class="px-5 py-2.5 rounded-lg font-label text-label text-on-surface-variant hover:bg-surface-sunken transition-colors" @click="showEditTrack = false">Cancel</button>
+          <button class="px-5 py-2.5 rounded-lg font-label text-label bg-primary text-white hover:bg-primary-deep transition-colors shadow-sm" :disabled="!editTrackForm.name || editTrackLoading" :class="{ 'opacity-50 cursor-not-allowed': !editTrackForm.name || editTrackLoading }" @click="saveEditTrack">
+            {{ editTrackLoading ? 'Saving...' : 'Save' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Assign Admin Modal -->
+    <div v-if="showAssignAdmin" class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center" @click.self="showAssignAdmin = false">
+      <div class="bg-surface rounded-xl shadow-lg w-full max-w-md p-6">
+        <h3 class="font-h3 text-h3 text-on-surface mb-4">Assign Track Admin</h3>
+        <p v-if="assignError" class="text-danger font-body-sm text-body-sm mb-3 bg-danger-mist border border-danger/20 rounded-lg px-4 py-2">{{ assignError }}</p>
+        <div class="flex flex-col gap-2">
+          <label class="font-label text-label text-on-surface-variant">User ID</label>
+          <input v-model="assignEmail" type="text" placeholder="Enter user ID" class="h-11 rounded-lg border border-outline-variant bg-surface px-4 font-body-md text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none" />
+        </div>
+        <div class="flex justify-end gap-3 mt-6">
+          <button class="px-5 py-2.5 rounded-lg font-label text-label text-on-surface-variant hover:bg-surface-sunken transition-colors" @click="showAssignAdmin = false">Cancel</button>
+          <button class="px-5 py-2.5 rounded-lg font-label text-label bg-primary text-white hover:bg-primary-deep transition-colors shadow-sm" :disabled="!assignEmail || assignLoading" :class="{ 'opacity-50 cursor-not-allowed': !assignEmail || assignLoading }" @click="assignAdmin">
+            {{ assignLoading ? 'Assigning...' : 'Assign' }}
+          </button>
+        </div>
+      </div>
     </div>
   </MainLayout>
 </template>
