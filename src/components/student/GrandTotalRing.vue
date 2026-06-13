@@ -4,7 +4,8 @@ import { computed, ref, onMounted } from 'vue'
 const props = defineProps({
   total: { type: Number, required: true },
   max: { type: Number, required: true },
-  gradeLetter: { type: String, default: '' }
+  gradeLetter: { type: String, default: '' },
+  mini: { type: Boolean, default: false }
 })
 
 const isMounted = ref(false)
@@ -26,7 +27,7 @@ const animatedPercentage = computed(() => {
 </script>
 
 <template>
-  <div class="relative w-[160px] h-[160px] flex items-center justify-center">
+  <div class="relative flex items-center justify-center" :class="mini ? 'w-12 h-12' : 'w-[160px] h-[160px]'">
     <svg class="circular-chart text-primary w-full h-full" viewBox="0 0 36 36">
       <path 
         class="circle-bg" 
@@ -43,12 +44,12 @@ const animatedPercentage = computed(() => {
         :stroke-dasharray="`${animatedPercentage}, 100`"
       ></path>
     </svg>
-    <div class="absolute flex flex-col items-center justify-center text-center mt-2">
+    <div v-if="!mini" class="absolute flex flex-col items-center justify-center text-center mt-2">
       <span class="font-kpi text-kpi text-on-surface leading-none mb-1">{{ Math.round(total) }}</span>
       <span class="font-body-sm text-body-sm text-[#6B7280]">/{{ max }} pts</span>
     </div>
     <div 
-      v-if="gradeLetter"
+      v-if="!mini && gradeLetter"
       class="absolute bottom-4 md:bottom-8 right-4 md:right-8 bg-[#8B1A1A] text-white rounded-full px-4 py-1.5 font-h3 text-h3 shadow-sm transform translate-y-4 translate-x-4 md:translate-x-8"
       style="background-color: var(--color-primary);"
     >
