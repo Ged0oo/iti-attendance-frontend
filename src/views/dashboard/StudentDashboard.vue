@@ -16,7 +16,7 @@
     </div>
 
     <template v-else>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <SummaryCard
           title="Attendance Balance"
           icon="calendar_month"
@@ -52,8 +52,7 @@
               <span class="font-body-md text-xl font-semibold text-on-surface-variant">/ {{ maxGrandTotal }}</span>
             </div>
             <div class="flex items-center gap-3">
-              <span class="inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-bold bg-primary/10 text-primary">{{ currentGrade }}</span>
-              <GrandTotalRing :total="grandTotal" :max="maxGrandTotal" mini />
+              <GrandTotalRing :total="grandTotal" :max="maxGrandTotal" :grade-letter="currentGrade" mini />
             </div>
           </div>
           <template #footer>
@@ -63,12 +62,7 @@
           </template>
         </SummaryCard>
 
-        <SummaryCard title="Pending Actions" icon="assignment_late" variant="warning">
-          <div class="mt-4 flex flex-col items-center justify-center py-2 h-full">
-            <span class="font-kpi text-[64px] leading-none text-warning">{{ pendingActionsCount }}</span>
-            <span class="font-body-md text-xl font-semibold text-on-surface-variant mt-2">Unanswered items</span>
-          </div>
-        </SummaryCard>
+
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -99,9 +93,6 @@
         <div class="lg:col-span-7 bg-surface rounded-3xl border border-black/[0.06] shadow-[0_8px_32px_rgba(0,0,0,0.03)] flex flex-col transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_24px_48px_-12px_rgba(0,0,0,0.08)] hover:border-black/10 overflow-hidden">
           <div class="flex justify-between items-center p-6 border-b border-black/5">
             <h2 class="font-h1 text-[28px] text-on-surface m-0">My Course Grades</h2>
-            <button class="bg-transparent border-none text-on-surface-variant cursor-pointer p-1 rounded-full transition-colors hover:text-primary hover:bg-black/5">
-              <span class="material-symbols-outlined">more_vert</span>
-            </button>
           </div>
           <div class="flex flex-col gap-4 p-6">
             <CourseGradeBar
@@ -128,14 +119,14 @@
             </button>
           </div>
         </div>
-        <div class="flex overflow-x-auto gap-6 pb-4 snap-x snap-mandatory scrollbar-hide" ref="sessionsScrollRef">
+        <div class="flex overflow-x-auto gap-6 pt-4 pb-4 snap-x snap-mandatory scrollbar-hide -mt-4" ref="sessionsScrollRef">
           <div v-if="sessions.length === 0" class="text-on-surface-variant italic p-4">No upcoming sessions scheduled.</div>
           <SessionCard
             v-for="session in sessions"
             :key="session.id"
-            :date="formatDateShort(session.start_time)"
+            :date="formatDateShort(session.date)"
             :type="session.type || 'Lecture'"
-            :title="session.title || 'Session'"
+            :title="session.course_name || session.title || 'Session'"
             :instructor="session.instructor_name || 'TBA'"
             :time="formatTimeRange(session.start_time, session.end_time)"
           />
@@ -164,7 +155,6 @@ const isLoading = ref(true)
 const announcements = ref([])
 const sessions = ref([])
 const courseGrades = ref([])
-const pendingActionsCount = ref(0)
 
 const sessionsScrollRef = ref(null)
 
@@ -227,7 +217,21 @@ onMounted(async () => {
 
     promises.push(
       api.get('/sessions').then(res => {
-        sessions.value = res.data.data || res.data || []
+        const raw = res.data?.data || res.data || []
+        // Sort by date ascending and take next upcoming sessions (date >= today)
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        sessions.value = raw
+          .filter(s => s.date && new Date(s.date) >= today)
+          .sort((a, b) => new Date(a.date) - new Date(b.date))
+          .slice(0, 8)
+          .map(s => ({
+            ...s,
+            // API has no 'type' — derive from is_delivered flag or default to 'Lecture'
+            type: s.type || (s.is_delivered ? 'Lecture' : 'Lecture'),
+            title: s.course_name || 'ITI Session',
+            instructor_name: s.instructor_name || 'ITI Instructor'
+          }))
       }).catch(() => {})
     )
 
@@ -239,12 +243,7 @@ onMounted(async () => {
       )
     }
 
-    promises.push(
-      api.get('/excuse-requests').then(res => {
-        const requests = res.data.data || res.data || []
-        pendingActionsCount.value = requests.filter((r) => r.status === 'pending').length
-      }).catch(() => {})
-    )
+
 
     if (studentId) {
       promises.push(
@@ -286,8 +285,15 @@ const formatDateShort = (dateStr) => {
 const formatTimeRange = (start, end) => {
   if (!start) return ''
   const formatTime = (timeStr) => {
-    const d = new Date(timeStr)
-    return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
+    if (timeStr.includes('T') || timeStr.includes('-')) {
+      const d = new Date(timeStr)
+      return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
+    }
+    const parts = timeStr.split(':')
+    if (parts.length >= 2) {
+      return `${parts[0]}:${parts[1]}`
+    }
+    return timeStr
   }
   return `${formatTime(start)} - ${end ? formatTime(end) : '?'}`
 }

@@ -56,5 +56,8 @@ const animatedPercentage = computed(() => {
     >
       {{ gradeLetter }}
     </div>
+    <div v-if="mini && gradeLetter" class="absolute inset-0 flex items-center justify-center">
+      <span class="font-bold text-[13px] text-primary select-none mt-[1px]">{{ gradeLetter }}</span>
+    </div>
   </div>
 </template>

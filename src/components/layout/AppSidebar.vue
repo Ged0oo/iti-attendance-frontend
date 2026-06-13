@@ -36,6 +36,7 @@ const allLinks = [
   { label: 'QR Scanner',   icon: 'qr_code_scanner', to: '/attendance/scan',   roles: ['student'], mobileOnly: true },
   { label: 'Grades',       icon: 'grade',           to: '/student/grades',    roles: ['student'] },
   { label: 'Submit Excuse', icon: 'description',    to: '/excuses/submit',    roles: ['student'] },
+  { label: 'My Profile',   icon: 'account_circle',  to: '/student/profile',  roles: ['student'] },
 ]
 
 const links = computed(() =>
