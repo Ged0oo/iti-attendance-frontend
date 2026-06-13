@@ -1,8 +1,10 @@
 import axios from 'axios';
 import { useAuthStore } from '../stores/auth';
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api';
+
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL,
+    baseURL: apiBaseUrl,
     headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
@@ -11,7 +13,7 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
     // Sanitize URL to handle inconsistent route prefixes in codebase
-    if (config.url && import.meta.env.VITE_API_BASE_URL?.endsWith('/api')) {
+    if (config.url && apiBaseUrl.endsWith('/api')) {
         if (config.url.startsWith('/api/')) {
             config.url = config.url.substring(4); // Keep leading slash: /cohorts
         } else if (config.url.startsWith('api/')) {
