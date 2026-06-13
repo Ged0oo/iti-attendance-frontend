@@ -190,10 +190,10 @@ EmU1UvVIEEghSirdlkhEgSLLAjLuWAEHW8tYtGQGCJAvMuGsJEGQtb92SEegtSLKwjLueAEHWM9cxEQG
                 for="password"
                 >Password</label
               >
-              <a
+              <router-link
+                to="/forgot-password"
                 class="font-label text-label text-primary hover:text-primary-deep transition-colors"
-                href="#"
-                >Forgot?</a
+                >Forgot?</router-link
               >
             </div>
             <div class="relative">
