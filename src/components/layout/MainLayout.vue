@@ -17,7 +17,7 @@ const { isCollapsed } = useSidebar()
 
     <div 
       class="flex-1 pb-[72px] lg:pb-0 min-w-0 min-h-screen flex flex-col overflow-x-hidden transition-all duration-300 ease-in-out"
-      :class="isCollapsed ? 'lg:ml-[72px]' : 'lg:ml-[240px]'"
+      :class="isCollapsed ? 'layout-collapsed' : 'layout-expanded'"
     >
       <AppHeader :title="title">
         <template #action>
@@ -31,4 +31,15 @@ const { isCollapsed } = useSidebar()
     </div>
   </div>
 </template>
+
+<style scoped>
+@media (min-width: 1024px) {
+  .layout-expanded {
+    margin-left: 240px;
+  }
+  .layout-collapsed {
+    margin-left: 72px;
+  }
+}
+</style>
 

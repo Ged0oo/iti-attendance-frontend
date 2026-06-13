@@ -137,7 +137,7 @@ async function logout() {
   background: #0E0505;
   display: flex;
   flex-direction: column;
-  z-index: 20;
+  z-index: 50;
   /* Subtle right-edge glow */
   box-shadow: 1px 0 0 rgba(139, 26, 26, 0.18), 4px 0 32px rgba(0, 0, 0, 0.4);
   overflow: hidden;
