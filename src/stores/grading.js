@@ -9,6 +9,7 @@ export const useGradingStore = defineStore('grading', () => {
   const courses = ref([]);
   const components = ref([]);
   const labGroups = ref([]);
+  const students = ref([]);
   const tags = ref([]);
   const notes = ref([]);
   const atRiskGrades = ref([]);
@@ -71,6 +72,28 @@ export const useGradingStore = defineStore('grading', () => {
       gradeCard.value = unwrap(res);
     } catch (err) {
       setError(err, 'Failed to load grade card');
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function fetchStudents(cohortId) {
+    if (!cohortId) {
+      students.value = [];
+      return [];
+    }
+
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const res = await api.get(`/cohorts/${cohortId}/students`);
+      const data = unwrap(res);
+      students.value = Array.isArray(data) ? data : [];
+      return students.value;
+    } catch (err) {
+      students.value = [];
+      return [];
     } finally {
       loading.value = false;
     }
@@ -242,6 +265,7 @@ export const useGradingStore = defineStore('grading', () => {
     courses,
     components,
     labGroups,
+    students,
     tags,
     notes,
     atRiskGrades,
@@ -249,6 +273,7 @@ export const useGradingStore = defineStore('grading', () => {
     saving,
     error,
     fetchReferenceData,
+    fetchStudents,
     fetchGradeCard,
     fetchDistribution,
     fetchGrades,

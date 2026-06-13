@@ -5,7 +5,7 @@ import { useGradingStore } from '../../stores/grading';
 import MainLayout from '../../components/layout/MainLayout.vue';
 
 const grading = useGradingStore();
-const { grades, courses, components, labGroups, loading, saving, error } = storeToRefs(grading);
+const { grades, courses, components, labGroups, students, loading, saving, error } = storeToRefs(grading);
 
 const filters = reactive({
     course_id: '',
@@ -23,6 +23,8 @@ const overrideForm = reactive({
 });
 const rawDrafts = ref({});
 const notice = ref('');
+const studentOptions = ref([]);
+const overrideError = ref('');
 
 const filteredComponents = computed(() => {
     if (!filters.course_id) {
@@ -52,6 +54,67 @@ const canSaveNewGrade = computed(() => {
     return Boolean(filters.grade_component_id && newGrade.student_id && newGrade.raw_score !== '');
 });
 
+function syncStudentOptions(sourceGrades = grades.value) {
+    const unique = new Map();
+
+    students.value
+        .filter((student) => !filters.lab_group_id || String(student.lab_group_id) === String(filters.lab_group_id))
+        .forEach((student) => {
+            unique.set(Number(student.id), {
+                id: Number(student.id),
+                name: student.user?.name || `Student #${student.id}`,
+                email: student.user?.email || '',
+            });
+        });
+
+    sourceGrades.forEach((grade) => {
+        if (!grade.student_id) {
+            return;
+        }
+
+        unique.set(Number(grade.student_id), {
+            id: Number(grade.student_id),
+            name: grade.student?.user?.name || `Student #${grade.student_id}`,
+            email: grade.student?.user?.email || '',
+        });
+    });
+
+    studentOptions.value = [...unique.values()].sort((a, b) => a.name.localeCompare(b.name));
+}
+
+async function loadStudentOptions() {
+    if (activeCourse.value?.cohort_id) {
+        await grading.fetchStudents(activeCourse.value.cohort_id);
+    }
+
+    syncStudentOptions();
+}
+
+function pickInitialSelection() {
+    const gradesWithComponents = grades.value.filter((grade) => grade.grade_component);
+
+    if (gradesWithComponents.length > 0) {
+        const counts = gradesWithComponents.reduce((map, grade) => {
+            const id = String(grade.grade_component_id);
+            map.set(id, (map.get(id) ?? 0) + 1);
+            return map;
+        }, new Map());
+
+        const [componentId] = [...counts.entries()].sort((a, b) => b[1] - a[1])[0];
+        const component = components.value.find((item) => String(item.id) === String(componentId));
+        const firstGrade = gradesWithComponents.find((grade) => String(grade.grade_component_id) === String(componentId));
+
+        filters.course_id = component?.course_id ?? firstGrade?.grade_component?.course_id ?? '';
+        filters.grade_component_id = componentId;
+        filters.lab_group_id = firstGrade?.lab_group_id ?? '';
+        return;
+    }
+
+    filters.course_id = courses.value[0]?.id ?? '';
+    filters.grade_component_id = filteredComponents.value[0]?.id ?? '';
+    filters.lab_group_id = labGroups.value.length === 1 ? labGroups.value[0].id : '';
+}
+
 function requestParams() {
     return Object.fromEntries(
         Object.entries(filters).filter(([, value]) => value !== '')
@@ -73,6 +136,7 @@ async function saveExisting(grade) {
     });
 
     if (saved) {
+        rawDrafts.value[saved.id] = saved.raw_score;
         notice.value = 'Raw score saved.';
     }
 }
@@ -91,6 +155,7 @@ async function saveNewGrade() {
     });
 
     if (saved) {
+        rawDrafts.value[saved.id] = saved.raw_score;
         newGrade.student_id = '';
         newGrade.raw_score = '';
         notice.value = 'Raw score submitted.';
@@ -101,17 +166,39 @@ function openOverride(grade) {
     overrideForm.grade = grade;
     overrideForm.override_value = grade.override_value ?? grade.effective_score ?? '';
     overrideForm.override_note = '';
+    overrideError.value = '';
 }
 
 function closeOverride() {
     overrideForm.grade = null;
     overrideForm.override_value = '';
     overrideForm.override_note = '';
+    overrideError.value = '';
 }
 
 async function submitOverride() {
+    overrideError.value = '';
+
     if (!overrideForm.override_note.trim()) {
-        notice.value = 'Override note is required.';
+        overrideError.value = 'Override note is required.';
+        return;
+    }
+
+    const maxOverride = Number(overrideForm.grade?.grade_component?.weight ?? 0);
+    const overrideValue = Number(overrideForm.override_value);
+
+    if (overrideForm.override_value === '' || Number.isNaN(overrideValue)) {
+        overrideError.value = 'Override value is required.';
+        return;
+    }
+
+    if (overrideValue < 0) {
+        overrideError.value = 'Override value cannot be less than 0.';
+        return;
+    }
+
+    if (maxOverride > 0 && overrideValue > maxOverride) {
+        overrideError.value = `Override value cannot exceed ${maxOverride}.`;
         return;
     }
 
@@ -123,6 +210,8 @@ async function submitOverride() {
     if (saved) {
         notice.value = 'Override saved.';
         closeOverride();
+    } else {
+        overrideError.value = error.value || 'Failed to save override.';
     }
 }
 
@@ -179,14 +268,15 @@ watch(() => filters.course_id, () => {
 watch(filters, () => {
     if (ready.value) {
         loadGrades();
+        loadStudentOptions();
     }
 }, { deep: true });
 
 onMounted(async () => {
     await grading.fetchReferenceData();
-    filters.course_id = courses.value[0]?.id ?? '';
-    filters.grade_component_id = filteredComponents.value[0]?.id ?? '';
-    filters.lab_group_id = labGroups.value.length === 1 ? labGroups.value[0].id : '';
+    await grading.fetchGrades();
+    pickInitialSelection();
+    await loadStudentOptions();
     ready.value = true;
     await loadGrades();
 });
@@ -201,7 +291,7 @@ onMounted(async () => {
         </div>
 
         <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div class="grid gap-4 xl:grid-cols-[1fr_1fr_1fr_0.9fr]">
+            <div class="grid gap-4 lg:grid-cols-3">
                 <label class="space-y-2">
                     <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Course</span>
                     <select v-model="filters.course_id" class="h-11 w-full rounded-lg border-slate-200 text-sm">
@@ -231,26 +321,49 @@ onMounted(async () => {
                         </option>
                     </select>
                 </label>
+            </div>
 
-                <div class="rounded-lg bg-primary-mist p-4">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-primary-container">{{ activeCourse?.name || 'Course' }}</p>
-                    <p class="mt-1 font-mono text-2xl text-primary-container">{{ gradedCount }} graded</p>
-                    <p class="text-xs text-slate-600">
-                        {{ activeComponent ? `${activeComponent.weight} pts · raw max ${activeComponent.raw_max}` : 'No component selected' }}
-                    </p>
+            <div class="mt-5 grid gap-3 md:grid-cols-3">
+                <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Graded Rows</p>
+                    <p class="mt-1 font-mono text-2xl text-on-surface">{{ gradedCount }}</p>
+                </div>
+                <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Component Weight</p>
+                    <p class="mt-1 font-mono text-2xl text-on-surface">{{ activeComponent ? `${activeComponent.weight}%` : '-' }}</p>
+                </div>
+                <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Max Score</p>
+                    <p class="mt-1 font-mono text-2xl text-on-surface">{{ activeComponent?.raw_max ?? '-' }}</p>
                 </div>
             </div>
         </div>
 
         <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div class="mb-4 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <div class="mb-4">
                 <div>
                     <h2 class="text-lg font-semibold text-on-surface">{{ activeComponent?.name || 'Raw scores' }}</h2>
-                    <p class="text-sm text-slate-500">{{ activeComponent ? `Raw max ${activeComponent.raw_max}; normalized into ${activeComponent.weight} course points.` : 'Select a component first.' }}</p>
                 </div>
-                <div class="grid gap-3 sm:grid-cols-[150px_150px_auto]">
-                    <input v-model="newGrade.student_id" class="h-10 rounded-lg border-slate-200 text-sm disabled:bg-slate-50" placeholder="Student ID" type="number" :disabled="!activeComponent" />
-                    <input v-model="newGrade.raw_score" class="h-10 rounded-lg border-slate-200 text-sm disabled:bg-slate-50" placeholder="Raw score" type="number" min="0" :max="activeComponent?.raw_max" :disabled="!activeComponent" />
+            </div>
+
+            <div class="mb-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+                <div class="grid gap-3 md:grid-cols-[minmax(160px,1fr)_minmax(160px,1fr)_auto] md:items-end">
+                    <label class="space-y-1.5">
+                        <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Student</span>
+                        <select v-model="newGrade.student_id" class="h-10 w-full rounded-lg border-slate-200 text-sm disabled:bg-slate-100" :disabled="!activeComponent || studentOptions.length === 0">
+                            <option value="">Select student</option>
+                            <option v-for="student in studentOptions" :key="student.id" :value="student.id">
+                                {{ student.name }}
+                            </option>
+                        </select>
+                    </label>
+                    <label class="space-y-1.5">
+                        <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Raw Score</span>
+                        <div class="flex items-center gap-3">
+                            <input v-model="newGrade.raw_score" class="h-10 w-full rounded-lg border-slate-200 text-sm disabled:bg-slate-100" placeholder="Raw score" type="number" min="0" :max="activeComponent?.raw_max" :disabled="!activeComponent" />
+                            <span class="whitespace-nowrap text-sm font-semibold text-slate-600">/ {{ activeComponent?.raw_max ?? '-' }}</span>
+                        </div>
+                    </label>
                     <button class="rounded-lg bg-primary-container px-4 py-2 text-sm font-semibold text-white hover:bg-primary disabled:opacity-50" :disabled="saving || !canSaveNewGrade" @click="saveNewGrade">
                         Add score
                     </button>
@@ -260,7 +373,7 @@ onMounted(async () => {
             <div v-if="notice" class="mb-4 rounded-lg bg-[#EFF6FF] px-4 py-3 text-sm text-[#2563EB]">
                 {{ notice }}
             </div>
-            <div v-if="error" class="mb-4 rounded-lg bg-danger-mist px-4 py-3 text-sm text-danger">
+            <div v-if="error && !overrideForm.grade" class="mb-4 rounded-lg bg-danger-mist px-4 py-3 text-sm text-danger">
                 {{ error }}
             </div>
 
@@ -268,13 +381,13 @@ onMounted(async () => {
                 <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
                     <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
                         <tr>
-                            <th class="px-4 py-3">Student</th>
-                            <th class="px-4 py-3">Component</th>
-                            <th class="px-4 py-3">Raw score</th>
-                            <th class="px-4 py-3">Normalized</th>
-                            <th class="px-4 py-3">Effective</th>
-                            <th class="px-4 py-3">Status</th>
-                            <th class="px-4 py-3 text-right">Actions</th>
+                            <th class="px-4 py-3 text-center">Student</th>
+                            <th class="px-4 py-3 text-center">Component</th>
+                            <th class="px-4 py-3 text-center">Raw score</th>
+                            <th class="px-4 py-3 text-center">Normalized</th>
+                            <th class="px-4 py-3 text-center">Effective</th>
+                            <th class="px-4 py-3 text-center">Status</th>
+                            <th class="px-4 py-3 text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
@@ -294,13 +407,17 @@ onMounted(async () => {
                             </td>
                             <td class="px-4 py-4">
                                 <div class="font-medium text-on-surface">{{ grade.grade_component?.name || `Component #${grade.grade_component_id}` }}</div>
-                                <div class="text-xs text-slate-500">Raw max {{ grade.grade_component?.raw_max ?? '-' }}</div>
                             </td>
                             <td class="px-4 py-4">
-                                <input v-model="rawDrafts[grade.id]" class="h-10 w-24 rounded-lg border-slate-200 text-center font-mono text-sm" type="number" min="0" :max="grade.grade_component?.raw_max" />
+                                <div class="flex items-center gap-3">
+                                    <input v-model="rawDrafts[grade.id]" class="h-10 w-24 rounded-lg border-slate-200 text-center font-mono text-sm" type="number" min="0" :max="grade.grade_component?.raw_max" />
+                                    <span class="whitespace-nowrap text-sm font-semibold text-slate-600">
+                                        / {{ grade.grade_component?.raw_max ?? '-' }}
+                                    </span>
+                                </div>
                             </td>
                             <td class="px-4 py-4 font-mono text-slate-700">{{ grade.normalized_score ?? '-' }}</td>
-                            <td class="px-4 py-4 font-mono font-semibold" :class="scoreTone(grade)">
+                            <td class="px-4 py-4 text-center font-mono font-semibold" :class="scoreTone(grade)">
                                 {{ grade.effective_score ?? '-' }}
                             </td>
                             <td class="px-4 py-4">
@@ -309,7 +426,7 @@ onMounted(async () => {
                                 <span v-else class="rounded-md bg-[#ECFDF5] px-2 py-1 text-xs font-semibold text-success">Current</span>
                             </td>
                             <td class="px-4 py-4">
-                                <div class="flex justify-end gap-2">
+                                <div class="flex justify-center gap-2">
                                     <button class="rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold hover:bg-slate-50" :disabled="saving" @click="saveExisting(grade)">
                                         Save
                                     </button>
@@ -330,9 +447,20 @@ onMounted(async () => {
                 <p class="mt-1 text-sm text-slate-500">A review note is required.</p>
 
                 <div class="mt-5 space-y-4">
+                    <div v-if="overrideError" class="rounded-lg bg-danger-mist px-4 py-3 text-sm font-medium text-danger">
+                        {{ overrideError }}
+                    </div>
+
                     <label class="block space-y-2">
                         <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Override value</span>
-                        <input v-model="overrideForm.override_value" class="h-11 w-full rounded-lg border-slate-200" type="number" min="0" />
+                        <input
+                            v-model="overrideForm.override_value"
+                            class="h-11 w-full rounded-lg border-slate-200"
+                            type="number"
+                            min="0"
+                            :max="overrideForm.grade?.grade_component?.weight"
+                            step="0.01"
+                        />
                     </label>
                     <label class="block space-y-2">
                         <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Review note</span>
