@@ -1,8 +1,8 @@
 <template>
-  <div class="dashboard-container">
-    <!-- Header Section -->
-    <header class="dashboard-header">
-      <div class="header-left">
+  <MainLayout title="Academic Portal">
+    <!-- Page title row -->
+    <div class="page-title-row">
+      <div>
         <div class="greeting-row">
           <h1 class="greeting">Good morning, {{ authStore.user?.name || 'Student' }} <span class="animate-wave inline-block">👋</span></h1>
           <span v-if="authStore.user?.cohort" class="cohort-badge">
@@ -11,16 +11,7 @@
         </div>
         <p class="subtitle">Here is your daily academic overview.</p>
       </div>
-      <div class="header-right">
-        <button class="notification-btn">
-          <span class="material-symbols-outlined">notifications</span>
-          <span class="notification-dot" v-if="pendingActionsCount > 0"></span>
-        </button>
-        <div class="profile-avatar hidden md-block">
-          <img src="https://ui-avatars.com/api/?name=Student&background=8B1A1A&color=fff" alt="Profile" />
-        </div>
-      </div>
-    </header>
+    </div>
 
     <!-- Loading State -->
     <div v-if="isLoading" class="loading-state">
@@ -152,7 +143,7 @@
         </div>
       </div>
     </template>
-  </div>
+  </MainLayout>
 </template>
 
 <script setup>
@@ -160,6 +151,7 @@ import { ref, onMounted, computed } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useLedgerStore } from '@/stores/ledger';
 import api from '@/services/api';
+import MainLayout from '@/components/layout/MainLayout.vue';
 
 import SummaryCard from '@/components/student/SummaryCard.vue';
 import GrandTotalRing from '@/components/student/GrandTotalRing.vue';
@@ -310,34 +302,8 @@ const formatTimeRange = (start, end) => {
 </script>
 
 <style scoped>
-.dashboard-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-}
-
-@media (max-width: 768px) {
-  .dashboard-container {
-    padding: 16px;
-    gap: 24px;
-  }
-}
-
-.dashboard-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 16px;
-}
-
-@media (max-width: 768px) {
-  .dashboard-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+.page-title-row {
+  margin-bottom: 8px;
 }
 
 .greeting-row {
@@ -374,64 +340,6 @@ const formatTimeRange = (start, end) => {
   margin: 0;
 }
 
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.notification-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: var(--color-surface, #FFFFFF);
-  border: 1px solid rgba(0,0,0,0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-text-secondary, #6B7280);
-  cursor: pointer;
-  position: relative;
-  transition: all 0.2s;
-}
-
-.notification-btn:hover {
-  color: var(--color-primary, #8B1A1A);
-  background-color: var(--color-primary-mist, #F9EAEA);
-}
-
-.notification-dot {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 8px;
-  height: 8px;
-  background-color: var(--color-danger, #DC2626);
-  border-radius: 50%;
-}
-
-.profile-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 1px solid rgba(0,0,0,0.1);
-}
-
-.profile-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.hidden {
-  display: none;
-}
-@media (min-width: 768px) {
-  .md-block {
-    display: block;
-  }
-}
 
 .loading-state {
   display: flex;

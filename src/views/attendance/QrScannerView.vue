@@ -1,5 +1,22 @@
 <template>
-  <div class="scanner-page">
+  <!-- ── Desktop block gate ─────────────────────────────────────────── -->
+  <div v-if="!isMobile" class="desktop-gate">
+    <div class="desktop-gate__card">
+      <span class="material-symbols-outlined desktop-gate__icon">smartphone</span>
+      <h2 class="desktop-gate__title">Mobile Only</h2>
+      <p class="desktop-gate__body">
+        QR attendance scanning requires a mobile device with a camera.
+        Open this page on your phone to check in.
+      </p>
+      <router-link :to="{ name: 'dashboard.student' }" class="desktop-gate__link">
+        <span class="material-symbols-outlined">arrow_back</span>
+        Back to Dashboard
+      </router-link>
+    </div>
+  </div>
+
+  <!-- ── Scanner (mobile only) ───────────────────────────────────────── -->
+  <div v-else class="scanner-page">
     <!-- Header -->
     <header class="scanner-header">
       <div class="header-brand">
@@ -173,6 +190,18 @@ import { useAuthStore } from '@/stores/auth'
 const attendanceStore = useAttendanceStore()
 const authStore = useAuthStore()
 
+// ── Mobile-only guard ─────────────────────────────────────────────────
+const isMobile = ref(true) // optimistic — confirmed in onMounted
+
+function detectMobile() {
+  const uaTouch = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  const hasTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0
+  const narrowScreen = window.innerWidth < 1024
+  return uaTouch || (hasTouch && narrowScreen)
+}
+
+// ─────────────────────────────────────────────────────────────────────
+
 const displayVideoEl = ref(null)
 const canvasEl = ref(null)
 const cameraError = ref(false)
@@ -290,6 +319,8 @@ const resetAndScanAgain = () => {
 }
 
 onMounted(() => {
+  isMobile.value = detectMobile()
+  if (!isMobile.value) return   // don't touch the camera on desktop
   attendanceStore.resetScan()
   startCamera()
 })
@@ -623,5 +654,78 @@ onUnmounted(() => {
 }
 .nav-item--active {
   color: #8B1A1A;
+}
+
+/* ── Desktop gate ────────────────────────────────────────────────────── */
+.desktop-gate {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F7F7F7;
+  padding: 24px;
+}
+
+.desktop-gate__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 56px 48px;
+  max-width: 440px;
+  width: 100%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 8px 32px rgba(0,0,0,0.06);
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+.desktop-gate__icon {
+  font-size: 52px;
+  color: #8B1A1A;
+  font-variation-settings: 'FILL' 0, 'wght' 200;
+  margin-bottom: 20px;
+  opacity: 0.85;
+}
+
+.desktop-gate__title {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 28px;
+  font-weight: 400;
+  color: #1A1A2E;
+  margin: 0 0 12px 0;
+  letter-spacing: -0.01em;
+}
+
+.desktop-gate__body {
+  font-family: "DM Sans", system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.65;
+  color: #6B7280;
+  margin: 0 0 32px 0;
+}
+
+.desktop-gate__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 24px;
+  background: #8B1A1A;
+  color: #ffffff;
+  border-radius: 8px;
+  text-decoration: none;
+  font-family: "DM Sans", system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  transition: background 0.18s ease;
+}
+
+.desktop-gate__link:hover {
+  background: #6B1212;
+}
+
+.desktop-gate__link .material-symbols-outlined {
+  font-size: 16px;
 }
 </style>
