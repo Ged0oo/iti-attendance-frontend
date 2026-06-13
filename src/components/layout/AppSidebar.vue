@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../../composables/useAuth'
 import { useAuthStore } from '../../stores/auth'
@@ -7,6 +7,14 @@ import { useAuthStore } from '../../stores/auth'
 const router = useRouter()
 const authStore = useAuthStore()
 const { currentUser, userRole } = useAuth()
+
+// Detect mobile on mount (same logic as QrScannerView)
+const isMobile = ref(true)
+onMounted(() => {
+  const uaTouch = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  const hasTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0
+  isMobile.value = uaTouch || (hasTouch && window.innerWidth < 1024)
+})
 
 const allLinks = [
   // ── Shared ──────────────────────────────────────────────────────────
@@ -25,13 +33,17 @@ const allLinks = [
 
   // ── Student Portal ──────────────────────────────────────────────────
   { label: 'Attendance',    icon: 'event_available', to: '/attendance/ledger', roles: ['student'] },
-  { label: 'QR Scanner',   icon: 'qr_code_scanner', to: '/attendance/scan',   roles: ['student'] },
+  { label: 'QR Scanner',   icon: 'qr_code_scanner', to: '/attendance/scan',   roles: ['student'], mobileOnly: true },
   { label: 'Grades',       icon: 'grade',           to: '/student/grades',    roles: ['student'] },
   { label: 'Submit Excuse', icon: 'description',    to: '/excuses/submit',    roles: ['student'] },
 ]
 
 const links = computed(() =>
-  allLinks.filter((link) => link.roles.includes(userRole.value)),
+  allLinks.filter((link) => {
+    if (!link.roles.includes(userRole.value)) return false
+    if (link.mobileOnly && !isMobile.value) return false
+    return true
+  }),
 )
 
 const userName = computed(() => currentUser.value?.name || 'User')
