@@ -40,7 +40,17 @@ const selectedLabGroupId = computed(() => {
     return filters.lab_group_id || grades.value[0]?.lab_group_id || '';
 });
 
+const ready = ref(false);
+
+const activeCourse = computed(() => {
+    return courses.value.find((course) => String(course.id) === String(filters.course_id));
+});
+
 const gradedCount = computed(() => grades.value.filter((grade) => grade.raw_score !== null).length);
+
+const canSaveNewGrade = computed(() => {
+    return Boolean(filters.grade_component_id && newGrade.student_id && newGrade.raw_score !== '');
+});
 
 function requestParams() {
     return Object.fromEntries(
@@ -68,8 +78,8 @@ async function saveExisting(grade) {
 }
 
 async function saveNewGrade() {
-    if (!newGrade.student_id || !filters.grade_component_id || !newGrade.raw_score) {
-        notice.value = 'Student, component, and raw score are required.';
+    if (!canSaveNewGrade.value) {
+        notice.value = 'Select a component, student, and raw score.';
         return;
     }
 
@@ -120,10 +130,28 @@ function studentLabel(grade) {
     return grade.student?.user?.name || `Student #${grade.student_id}`;
 }
 
-function scoreTone(grade) {
-    const score = Number(grade.effective_score ?? grade.normalized_score ?? 0);
+function componentWeight(grade) {
+    return Number(grade.grade_component?.weight ?? activeComponent.value?.weight ?? 0);
+}
 
-    if (score < 60) {
+function effectiveScore(grade) {
+    return Number(grade.effective_score ?? grade.normalized_score ?? 0);
+}
+
+function scorePercent(grade) {
+    const weight = componentWeight(grade);
+
+    if (weight <= 0) {
+        return 0;
+    }
+
+    return (effectiveScore(grade) / weight) * 100;
+}
+
+function scoreTone(grade) {
+    const percent = scorePercent(grade);
+
+    if (percent < 60) {
         return 'text-danger';
     }
 
@@ -134,10 +162,32 @@ function scoreTone(grade) {
     return 'text-on-surface';
 }
 
-watch(filters, loadGrades, { deep: true });
+watch(() => filters.course_id, () => {
+    if (!filters.course_id) {
+        return;
+    }
+
+    const componentStillValid = filteredComponents.value.some((component) => {
+        return String(component.id) === String(filters.grade_component_id);
+    });
+
+    if (!componentStillValid) {
+        filters.grade_component_id = filteredComponents.value[0]?.id ?? '';
+    }
+});
+
+watch(filters, () => {
+    if (ready.value) {
+        loadGrades();
+    }
+}, { deep: true });
 
 onMounted(async () => {
     await grading.fetchReferenceData();
+    filters.course_id = courses.value[0]?.id ?? '';
+    filters.grade_component_id = filteredComponents.value[0]?.id ?? '';
+    filters.lab_group_id = labGroups.value.length === 1 ? labGroups.value[0].id : '';
+    ready.value = true;
     await loadGrades();
 });
 </script>
@@ -151,13 +201,23 @@ onMounted(async () => {
         </div>
 
         <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div class="grid gap-4 lg:grid-cols-4">
+            <div class="grid gap-4 xl:grid-cols-[1fr_1fr_1fr_0.9fr]">
                 <label class="space-y-2">
                     <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Course</span>
                     <select v-model="filters.course_id" class="h-11 w-full rounded-lg border-slate-200 text-sm">
-                        <option value="">All courses</option>
+                        <option value="">Select course</option>
                         <option v-for="course in courses" :key="course.id" :value="course.id">
                             {{ course.name }}
+                        </option>
+                    </select>
+                </label>
+
+                <label class="space-y-2">
+                    <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Grade Component</span>
+                    <select v-model="filters.grade_component_id" class="h-11 w-full rounded-lg border-slate-200 text-sm">
+                        <option value="">Select component</option>
+                        <option v-for="component in filteredComponents" :key="component.id" :value="component.id">
+                            {{ component.name }}
                         </option>
                     </select>
                 </label>
@@ -172,21 +232,11 @@ onMounted(async () => {
                     </select>
                 </label>
 
-                <label class="space-y-2">
-                    <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Grade Component</span>
-                    <select v-model="filters.grade_component_id" class="h-11 w-full rounded-lg border-slate-200 text-sm">
-                        <option value="">All components</option>
-                        <option v-for="component in filteredComponents" :key="component.id" :value="component.id">
-                            {{ component.name }} / raw max {{ component.raw_max }}
-                        </option>
-                    </select>
-                </label>
-
                 <div class="rounded-lg bg-primary-mist p-4">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-primary-container">Progress</p>
+                    <p class="text-xs font-semibold uppercase tracking-wide text-primary-container">{{ activeCourse?.name || 'Course' }}</p>
                     <p class="mt-1 font-mono text-2xl text-primary-container">{{ gradedCount }} graded</p>
                     <p class="text-xs text-slate-600">
-                        {{ activeComponent ? `Component weight ${activeComponent.weight}` : 'Choose a component to add a grade' }}
+                        {{ activeComponent ? `${activeComponent.weight} pts · raw max ${activeComponent.raw_max}` : 'No component selected' }}
                     </p>
                 </div>
             </div>
@@ -195,14 +245,14 @@ onMounted(async () => {
         <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
             <div class="mb-4 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
                 <div>
-                    <h2 class="text-lg font-semibold text-on-surface">Add or update raw score</h2>
-                    <p class="text-sm text-slate-500">Use this row when a student does not already appear in the grid.</p>
+                    <h2 class="text-lg font-semibold text-on-surface">{{ activeComponent?.name || 'Raw scores' }}</h2>
+                    <p class="text-sm text-slate-500">{{ activeComponent ? `Raw max ${activeComponent.raw_max}; normalized into ${activeComponent.weight} course points.` : 'Select a component first.' }}</p>
                 </div>
                 <div class="grid gap-3 sm:grid-cols-[150px_150px_auto]">
-                    <input v-model="newGrade.student_id" class="h-10 rounded-lg border-slate-200 text-sm" placeholder="Student ID" type="number" />
-                    <input v-model="newGrade.raw_score" class="h-10 rounded-lg border-slate-200 text-sm" placeholder="Raw score" type="number" min="0" :max="activeComponent?.raw_max" />
-                    <button class="rounded-lg bg-primary-container px-4 py-2 text-sm font-semibold text-white hover:bg-primary disabled:opacity-50" :disabled="saving" @click="saveNewGrade">
-                        Save raw score
+                    <input v-model="newGrade.student_id" class="h-10 rounded-lg border-slate-200 text-sm disabled:bg-slate-50" placeholder="Student ID" type="number" :disabled="!activeComponent" />
+                    <input v-model="newGrade.raw_score" class="h-10 rounded-lg border-slate-200 text-sm disabled:bg-slate-50" placeholder="Raw score" type="number" min="0" :max="activeComponent?.raw_max" :disabled="!activeComponent" />
+                    <button class="rounded-lg bg-primary-container px-4 py-2 text-sm font-semibold text-white hover:bg-primary disabled:opacity-50" :disabled="saving || !canSaveNewGrade" @click="saveNewGrade">
+                        Add score
                     </button>
                 </div>
             </div>
@@ -231,8 +281,11 @@ onMounted(async () => {
                         <tr v-if="loading">
                             <td class="px-4 py-6 text-slate-500" colspan="7">Loading grades...</td>
                         </tr>
+                        <tr v-else-if="!activeComponent">
+                            <td class="px-4 py-6 text-slate-500" colspan="7">Select a grade component.</td>
+                        </tr>
                         <tr v-else-if="grades.length === 0">
-                            <td class="px-4 py-6 text-slate-500" colspan="7">No grades match the current filters.</td>
+                            <td class="px-4 py-6 text-slate-500" colspan="7">No scores recorded for this selection.</td>
                         </tr>
                         <tr v-for="grade in grades" v-else :key="grade.id" :class="grade.student?.is_at_risk ? 'border-l-4 border-l-danger bg-danger-mist/40' : 'hover:bg-primary-mist/30'">
                             <td class="px-4 py-4">
@@ -251,7 +304,7 @@ onMounted(async () => {
                                 {{ grade.effective_score ?? '-' }}
                             </td>
                             <td class="px-4 py-4">
-                                <span v-if="grade.override_value" class="rounded-md bg-[#FFFBEB] px-2 py-1 text-xs font-semibold text-[#D97706]">Overridden</span>
+                                <span v-if="grade.override_value !== null && grade.override_value !== undefined" class="rounded-md bg-[#FFFBEB] px-2 py-1 text-xs font-semibold text-[#D97706]">Overridden</span>
                                 <span v-else-if="grade.student?.is_at_risk" class="rounded-md bg-danger-mist px-2 py-1 text-xs font-semibold text-danger">At-Risk</span>
                                 <span v-else class="rounded-md bg-[#ECFDF5] px-2 py-1 text-xs font-semibold text-success">Current</span>
                             </td>
