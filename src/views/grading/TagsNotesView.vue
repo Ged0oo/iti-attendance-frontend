@@ -162,7 +162,7 @@ onMounted(async () => {
 
 <template>
     <MainLayout title="Tags & Notes">
-    <section class="mx-auto max-w-7xl space-y-6">
+    <section class="w-full space-y-6">
         <div class="flex flex-col gap-2">
             <p class="text-sm font-semibold uppercase tracking-wide text-primary-container">Student support</p>
             <h1 class="font-serif text-4xl text-on-surface">Tags & Notes</h1>
