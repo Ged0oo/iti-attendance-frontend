@@ -35,4 +35,22 @@ export default [
         component: () => import('../views/dashboard/StudentProfileView.vue'),
         meta: { requiresAuth: true, roles: ['student'] },
     },
+    {
+        path: '/instructor/profile',
+        name: 'instructor-profile',
+        component: () => import('../views/dashboard/InstructorProfileView.vue'),
+        meta: { requiresAuth: true, roles: ['instructor'] },
+    },
+    {
+        path: '/track-admin/profile',
+        name: 'track-admin-profile',
+        component: () => import('../views/dashboard/TrackAdminProfileView.vue'),
+        meta: { requiresAuth: true, roles: ['track_admin'] },
+    },
+    {
+        path: '/branch-manager/profile',
+        name: 'branch-manager-profile',
+        component: () => import('../views/dashboard/BranchManagerProfileView.vue'),
+        meta: { requiresAuth: true, roles: ['branch_manager'] },
+    },
 ]  
