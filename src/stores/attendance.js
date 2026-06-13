@@ -3,18 +3,31 @@ import api from '@/services/api';
 
 export const useAttendanceStore = defineStore('attendance', {
     state: () => ({
+        scanState: 'scanning',
+        loading: false,
+        lastScanResult: null,
         isProcessing: false,
         lastScan: null,
         sessionLogs: []
     }),
     actions: {
-        async submitScan(qrCodeString) {
+        resetScan() {
+            this.scanState = 'scanning';
+            this.loading = false;
+            this.lastScanResult = null;
+            this.isProcessing = false;
+            this.lastScan = null;
+        },
+        async submitScan(qrCodeString, studentId) {
+            this.loading = true;
             this.isProcessing = true;
+            this.lastScanResult = null;
             this.lastScan = null;
             
             try {
                 const response = await api.post('/attendance/scan', { 
-                    session_qr_code: qrCodeString 
+                    session_qr_code: qrCodeString,
+                    student_id: studentId
                 });
                 
                 const responseData = response.data.data || response.data;
@@ -25,14 +38,26 @@ export const useAttendanceStore = defineStore('attendance', {
                     displayMessage = responseData.message;
                 }
                 
-                this.lastScan = {
+                // Map backend status to scanState
+                // Backend returns status: 'arrived' or 'left' or 'completed'
+                let nextScanState = 'checked-in';
+                if (responseData.status === 'left') {
+                    nextScanState = 'checked-out';
+                } else if (responseData.status === 'completed') {
+                    nextScanState = 'duplicate';
+                }
+                
+                this.scanState = nextScanState;
+                this.lastScanResult = {
                     success: true,
                     status: responseData.status,
                     timestamp: responseData.timestamp,
-                    message: displayMessage
+                    message: displayMessage,
+                    session: responseData.session || null
                 };
                 
-                return this.lastScan;
+                this.lastScan = this.lastScanResult; // For backward compatibility
+                return this.lastScanResult;
             } catch (error) {
                 // Safely extract error messages even if Laravel returns an object
                 let errorMsg = 'Invalid or expired QR code.';
@@ -45,12 +70,36 @@ export const useAttendanceStore = defineStore('attendance', {
                     errorMsg = JSON.stringify(backendMessage); 
                 }
 
-                this.lastScan = {
+                // Determine appropriate scanState based on error message/status
+                let nextScanState = 'error';
+                const status = error.response?.status;
+                const msgLower = errorMsg.toLowerCase();
+                
+                if (status === 400 && msgLower.includes('expired')) {
+                    nextScanState = 'expired';
+                } else if (status === 400 && msgLower.includes('invalid')) {
+                    nextScanState = 'invalid';
+                } else if (status === 403 || msgLower.includes('active today') || msgLower.includes('wrong day')) {
+                    nextScanState = 'wrong-day';
+                } else if (status === 422) {
+                    if (msgLower.includes('closed') || msgLower.includes('expired')) {
+                        nextScanState = 'expired';
+                    } else {
+                        nextScanState = 'invalid';
+                    }
+                } else if (msgLower.includes('invalid')) {
+                    nextScanState = 'invalid';
+                }
+                
+                this.scanState = nextScanState;
+                this.lastScanResult = {
                     success: false,
                     message: errorMsg
                 };
-                throw this.lastScan;
+                this.lastScan = this.lastScanResult; // For backward compatibility
+                throw this.lastScanResult;
             } finally {
+                this.loading = false;
                 this.isProcessing = false;
             }
         }
