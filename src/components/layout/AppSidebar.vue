@@ -36,8 +36,8 @@ async function logout() {
 <template>
   <nav class="h-screen w-[240px] fixed left-0 top-0 bg-shell text-text-inverse flex flex-col py-6 z-20">
     <div class="px-5 mb-10 flex items-center gap-3">
-      <div class="w-10 h-10 rounded-sm bg-surface flex items-center justify-center text-primary flex-shrink-0">
-        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">school</span>
+      <div class="w-10 h-10 rounded-sm bg-white flex items-center justify-center flex-shrink-0">
+        <img src="@/assets/iti-logo.png" alt="ITI Logo" class="w-8 h-8 object-contain" />
       </div>
       <div>
         <div class="font-h3 text-h3 text-white leading-none">ITI Management</div>

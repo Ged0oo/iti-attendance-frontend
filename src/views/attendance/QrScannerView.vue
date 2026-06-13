@@ -4,7 +4,7 @@
     <header class="scanner-header">
       <div class="header-brand">
         <span class="material-symbols-outlined header-menu-icon" style="font-variation-settings: 'FILL' 0;">menu</span>
-        <span class="header-logo">ITI</span>
+        <img src="@/assets/iti-logo.png" alt="ITI Logo" style="height: 24px; object-fit: contain;" />
       </div>
       <h1 class="header-title">Scan</h1>
       <span class="material-symbols-outlined header-notif-icon" style="font-variation-settings: 'FILL' 0;">notifications</span>

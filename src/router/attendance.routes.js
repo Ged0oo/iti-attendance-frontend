@@ -3,13 +3,13 @@ export default [
     {
         path: '/attendance/scan',
         name: 'attendance-scan',
-        component: QrScannerView,
+        component: () => import('@/views/attendance/QrScannerView.vue'),
         meta: { requiresAuth: true }
     },
     {
         path: '/attendance/ledger',
         name: 'student-ledger',
-        component: () => import('@/views/excuses/LedgerBalanceView.vue'),
+        component: () => import('@/views/attendance/LedgerBalanceView.vue'),
         meta: { requiresAuth: true }
     },
     {

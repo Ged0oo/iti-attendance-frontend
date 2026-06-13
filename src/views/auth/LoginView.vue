@@ -3,88 +3,56 @@
   <div class="flex min-h-screen w-full">
     <!-- Left Panel (Brand/Identity) -->
     <div
-      class="hidden lg:flex w-[45%] bg-[#1A0A0A] relative flex-col justify-center items-center p- margin-desktop overflow-hidden border-r border-shell-border"
+      class="hidden lg:flex w-[45%] relative flex-col justify-center items-center p-margin-desktop overflow-hidden border-r border-shell-border"
     >
-      <!-- Subtle Radial Glow -->
-      <div
-        class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(168,32,32,0.15)_0%, rgba(26,10,10,0)_60%)] z-0"
+      <!-- Background Image -->
+      <div 
+        class="absolute inset-0 bg-[url('@/assets/login-bg.png')] bg-cover bg-center bg-no-repeat z-0"
       ></div>
+      
+      <!-- Red Theme Overlay -->
+      <div
+        class="absolute inset-0 bg-[#8B1A1A]/80 mix-blend-multiply z-0"
+      ></div>
+      <!-- Subtle Radial Glow for extra depth -->
+      <div
+        class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(168,32,32,0.4)_0%,rgba(26,10,10,0.8)_100%)] z-0"
+      ></div>
+
       <div
         class="relative z-10 max-w-md w-full flex flex-col items-center text-center space-y-8"
       >
-        <!-- Logo Monogram -->
-        <img
-          alt="ITI Monogram Logo"
-          class="w-24 h-24 rounded-lg shadow-xl shadow-black/50"
-          src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAGSklEQVR4AezTa3IiNxSGYU+     
-  WMfucVWSf3kZS+UGFsXuAFmrpXB5XuYBGOpf34/3rwx8CCPyRAEH+                                                  
-
-iMYXCHx8EMSvAIEHBAjyAI6vECCI3wACDwhcKMiDrr5CIAkBgiQJyph7CBBkD3ddkxAgSJKgjLmHAEH2cNc1CYGcgiSBa8z8BAiSP0MbXEi
-AIBfCVTo/AYLkz9AGFxIgyIVwlc5PgCBfMvQRgXsCBLmn4T0CXwgQ5AsQHxG4J0CQexreI/CFAEG+
-
-APERgXsCBLmnce171RMSIEjC0Iy8jgBB1rHWKSEBgiQMzcjrCBBkHWudEhIgSMLQvo/syVUECHIVWXVLECBIiRgtcRUBglxFVt0SBAhSIkZ
-LXEWAIFeRrVK3+
-  R4Eaf4DsP5jAgR5zMe3zQkQpPkPwPqPCRDkMR/fNidAkOY/gJ3rZ+                                                  
-  hNkAwpmXEbAYJsQ69xBgIEyZCSGbcRIMg29BpnIBBekL9//vzHf10GF0kyrWx4QaZtqhACAwQIMgDNlT4ECNIna5sOECDIADRX+    
-  hAgSJ+                                                                                                 
-
-sbTpA4LsgA0VcQaAqAYJUTdZeUwgQZApGRaoSIEjVZO01hQBBpmBUpCqBpYJUhWivugQIUjdbm00gQJAJEJWoS4AgdbO12QQCBJkAUYm6BK
-oIUjchm20lQJCt+
-  DWPToAg0RMy31YCBNmKX/PoBAjyZkK/Pj9/vPL/Zptv11/p+d+Zbxc9OEWAIE9xOdCZAEE6p2/3pwQI8hSRA50JEKRz+           
-
-nZ/SoAgTxE50JkAQXamr3d4AgQJH5EBdxIgyE76eocnQJDwERlwJwGC7KSvd3gCBAkf0diAbs0hQJA5HFUpSoAgRYO11hwCBJnDUZWiBAhS
-NFhrzSFAkDkcO1VptStBWsVt2bMECHKWmPOtCBCkVdyWPUuAIGeJOd+
-
-KAEFaxR192XjzESReJiYKRIAggcIwSjwCBImXiYkCESBIoDCMEo8AQeJlYqIrCAzWJMggONd6ECBIj5xtOUiAIIPgXOtBgCA9crblIAGCDI
-JzrQeBVwTpQcKWCBwQIMgBFI8QuBEgyI2EVwQOCBDkAIpHCNwIEORGwisCBwQ2C3IwkUcIBCJAkEBhGCUeAYLEy8REgQgQJFAYRolHgCDxM
-jFRIAJ1BQkE2Sh5CRAkb3YmX0CAIAsga5GXAEHyZmfyBQQIsgCyFnkJEGQgO1f6ECBIn6xtOkCAIAPQXOlDgCB9srbpAAGCDEBzpQ8BgsTK
-2jTBCBAkWCDGiUWAILHyME0wAgQJFohxYhEgSKw8TBOMAEGCBXLdOCqPECDICDV32hAgSJuoLTpCgCAj1NxpQ4AgbaK26AgBgoxQc+
-  d3AoU/EaRwuFZ7nwBB3meoQmECBCkcrtXeJ0CQ9xmqUJgAQQqHW2G13TsQZHcC+                                        
-
-ocmQJDQ8RhuNwGC7E5A/9AECBI6HsPtJkCQ3Qnov4vAS30J8hImh7oSIEjX5O39EgGCvITJoa4ECNI1eXu/RIAgL2FyqCuBMUG60rJ3OwIE
-aRe5hc8QIMgZWs62I0CQdpFb+
-  AwBgpyh5Ww7AuEEaZeAhUMTIEjoeAy3mwBBdiegf2gCBAkdj+                                                      
-
-F2EyDI7gT0D02gkyChgzBcTAIEiZmLqYIQIEiQIIwRkwBBYuZiqiAECBIkCGPEJECQKbkoUpUAQaoma68pBAgyBaMiVQkQpGqy9ppCgCBTM
-CpSlQBBoidrvq0ECLIVv+
-  bRCYQX5Nfn54/I/68GPHuHXX137fHqvrPPhRdk9sLqIXCGAEHO0HK2HQGCtIv8/4W9e06AIM8ZOdGYAEEah2/15wQI8pyRE40JEKRx+
-
-FZ/ToAgzxk5cZ5AmRsEKROlRa4gQJArqKpZhgBBykRpkSsIEOQKqmqWIUCQMlF2WWTtngRZy1u3ZAQIkiww464lQJC1vHVLRoAgyQIz7loC
-BFnLW7fIBA5mI8gBFI8QuBEgyI2EVwQOCBDkAIpHCNwIEORGwisCBwQIcgDFIwRuBGYJcqvnFYFSBAhSKk7LzCZAkNlE1StFgCCl4rTMbAI
-EmU1UvVIEEghSirdlkhEgSLLAjLuWAEHW8tYtGQGCJAvMuGsJEGQtb92SEegtSLKwjLueAEHWM9cxEQGCJArLqOsJEGQ9cx0TESBIorCMup
-4AQS5irmwNAv8CAAD//w8BwbIAAAAGSURBVAMAJTLhoJfSZNkAAAAASUVORK5CYII="
-        />
         <!-- Typography Group -->
         <div class="space-y-4">
-          <h1 class="font-h1 text-h1 text-white">
+          <h1 class="font-h1 text-h1 text-white drop-shadow-md">
             Information Technology Institute
           </h1>
-          <p class="font-body-lg text-body-lg text-white/70 max-w-sm mx-auto">
+          <p class="font-body-lg text-body-lg text-white/90 max-w-sm mx-auto drop-shadow">
             Powering Egypt's tech talent — one cohort at a time.
           </p>
         </div>
         <!-- Role Pills Grid -->
-        <div class="pt-8 w-full border-t border-white/10">
+        <div class="pt-8 w-full border-t border-white/20">
           <p
-            class="font-label-caps text-label-caps text-white/50 mb-4 tracking-widest uppercase"
+            class="font-label-caps text-label-caps text-white/70 mb-4 tracking-widest uppercase drop-shadow"
           >
             Portal Access Level
           </p>
           <div class="flex flex-wrap justify-center gap-3">
             <span
-              class="inline-flex items-center px-4 py-1.5 rounded-full font-label text-label bg- white/10 text-white/90 border border-white/5 backdrop-blur-sm shadow-sm"
+              class="inline-flex items-center px-4 py-1.5 rounded-full font-label text-label bg-white/20 text-white border border-white/10 backdrop-blur-md shadow-sm"
               >Branch Manager</span
             >
             <span
-              class="inline-flex items-center px-4 py-1.5 rounded-full font-label text-label bg- white/10 text-white/90 border border-white/5 backdrop-blur-sm shadow-sm"
+              class="inline-flex items-center px-4 py-1.5 rounded-full font-label text-label bg-white/20 text-white border border-white/10 backdrop-blur-md shadow-sm"
               >Track Admin</span
             >
             <span
-              class="inline-flex items-center px-4 py-1.5 rounded-full font-label text-label bg- white/10 text-white/90 border border-white/5 backdrop-blur-sm shadow-sm"
+              class="inline-flex items-center px-4 py-1.5 rounded-full font-label text-label bg-white/20 text-white border border-white/10 backdrop-blur-md shadow-sm"
               >Instructor</span
             >
             <span
-              class="inline-flex items-center px-4 py-1.5 rounded-full font-label text-label bg- white/10 text-white/90 border border-white/5 backdrop-blur-sm shadow-sm"
+              class="inline-flex items-center px-4 py-1.5 rounded-full font-label text-label bg-white/20 text-white border border-white/10 backdrop-blur-md shadow-sm"
               >Student</span
             >
           </div>
@@ -106,44 +74,7 @@ EmU1UvVIEEghSirdlkhEgSLLAjLuWAEHW8tYtGQGCJAvMuGsJEGQtb92SEegtSLKwjLueAEHWM9cxEQG
         <img
           alt="ITI Monogram Logo"
           class="w-10 h-10 rounded shadow-sm"
-          src="data:image/png;base64, 
-  iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAYAAACtWK6eAAAGSklEQVR4AezTa3IiNxSGYU+WMfucVWSf3kZS+                  
-  UGFsXuAFmrpXB5XuYBGOpf34/3rwx8CCPyRAEH+                                                                
-
-iMYXCHx8EMSvAIEHBAjyAI6vECCI3wACDwhcKMiDrr5CIAkBgiQJyph7CBBkD3ddkxAgSJKgjLmHAEH2cNc1CYGcgiSBa8z8BAiSP0MbXEi
-AIBfCVTo/AYLkz9AGFxIgyIVwlc5PgCBfMvQRgXsCBLmn4T0CXwgQ5AsQHxG4J0CQexreI/CFAEG+
-
-APERgXsCBLmnce171RMSIEjC0Iy8jgBB1rHWKSEBgiQMzcjrCBBkHWudEhIgSMLQvo/syVUECHIVWXVLECBIiRgtcRUBglxFVt0SBAhSIkZ
-LXEWAIFeRrVK3+
-  R4Eaf4DsP5jAgR5zMe3zQkQpPkPwPqPCRDkMR/fNidAkOY/gJ3rZ+                                                  
-  hNkAwpmXEbAYJsQ69xBgIEyZCSGbcRIMg29BpnIBBekL9//vzHf10GF0kyrWx4QaZtqhACAwQIMgDNlT4ECNIna5sOECDIADRX+    
-  hAgSJ+                                                                                                 
-
-sbTpA4LsgA0VcQaAqAYJUTdZeUwgQZApGRaoSIEjVZO01hQBBpmBUpCqBpYJUhWivugQIUjdbm00gQJAJEJWoS4AgdbO12QQCBJkAUYm6BK
-oIUjchm20lQJCt+
-  DWPToAg0RMy31YCBNmKX/PoBAjyZkK/Pj9/vPL/Zptv11/p+d+Zbxc9OEWAIE9xOdCZAEE6p2/3pwQI8hSRA50JEKRz+           
-
-nZ/SoAgTxE50JkAQXamr3d4AgQJH5EBdxIgyE76eocnQJDwERlwJwGC7KSvd3gCBAkf0diAbs0hQJA5HFUpSoAgRYO11hwCBJnDUZWiBAhS
-NFhrzSFAkDkcO1VptStBWsVt2bMECHKWmPOtCBCkVdyWPUuAIGeJOd+
-
-KAEFaxR192XjzESReJiYKRIAggcIwSjwCBImXiYkCESBIoDCMEo8AQeJlYqIrCAzWJMggONd6ECBIj5xtOUiAIIPgXOtBgCA9crblIAGCDI
-JzrQeBVwTpQcKWCBwQIMgBFI8QuBEgyI2EVwQOCBDkAIpHCNwIEORGwisCBwQ2C3IwkUcIBCJAkEBhGCUeAYLEy8REgQgQJFAYRolHgCDxM
-jFRIAJ1BQkE2Sh5CRAkb3YmX0CAIAsga5GXAEHyZmfyBQQIsgCyFnkJEGQgO1f6ECBIn6xtOkCAIAPQXOlDgCB9srbpAAGCDEBzpQ8BgsTK
-2jTBCBAkWCDGiUWAILHyME0wAgQJFohxYhEgSKw8TBOMAEGCBXLdOCqPECDICDV32hAgSJuoLTpCgCAj1NxpQ4AgbaK26AgBgoxQc+
-  d3AoU/EaRwuFZ7nwBB3meoQmECBCkcrtXeJ0CQ9xmqUJgAQQqHW2G13TsQZHcC+                                        
-
-ocmQJDQ8RhuNwGC7E5A/9AECBI6HsPtJkCQ3Qnov4vAS30J8hImh7oSIEjX5O39EgGCvITJoa4ECNI1eXu/RIAgL2FyqCuBMUG60rJ3OwIE
-aRe5hc8QIMgZWs62I0CQdpFb+
-  AwBgpyh5Ww7AuEEaZeAhUMTIEjoeAy3mwBBdiegf2gCBAkdj+                                                      
-
-F2EyDI7gT0D02gkyChgzBcTAIEiZmLqYIQIEiQIIwRkwBBYuZiqiAECBIkCGPEJECQKbkoUpUAQaoma68pBAgyBaMiVQkQpGqy9ppCgCBTM
-CpSlQBBoidrvq0ECLIVv+
-  bRCYQX5Nfn54/I/68GPHuHXX137fHqvrPPhRdk9sLqIXCGAEHO0HK2HQGCtIv8/4W9e06AIM8ZOdGYAEEah2/15wQI8pyRE40JEKRx+
-
-FZ/ToAgzxk5cZ5AmRsEKROlRa4gQJArqKpZhgBBykRpkSsIEOQKqmqWIUCQMlF2WWTtngRZy1u3ZAQIkiww464lQJC1vHVLRoAgyQIz7loC
-BFnLW7fIBA5mI8gBFI8QuBEgyI2EVwQOCBDkAIpHCNwIEORGwisCBwQIcgDFIwRuBGYJcqvnFYFSBAhSKk7LzCZAkNlE1StFgCCl4rTMbAI
-EmU1UvVIEEghSirdlkhEgSLLAjLuWAEHW8tYtGQGCJAvMuGsJEGQtb92SEegtSLKwjLueAEHWM9cxEQGCJArLqOsJEGQ9cx0TESBIorCMup
-4AQS5irmwNAv8CAAD//w8BwbIAAAAGSURBVAMAJTLhoJfSZNkAAAAASUVORK5CYII="
+          src="@/assets/iti-logo.png"
         />
         <span class="font-h3 text-h3 text-on-surface">ITI Portal</span>
       </div>
