@@ -415,8 +415,33 @@ async function logout() {
     display: none; /* Hide left rail */
   }
 
-  .brand, .user-footer {
+  .brand {
     display: none;
+  }
+
+  .user-footer {
+    display: flex;
+    border-top: none;
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    background: transparent;
+    padding: 0 12px;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+  }
+
+  .user-avatar, .user-info {
+    display: none;
+  }
+
+  .logout-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+  }
+
+  .logout-btn .material-symbols-outlined {
+    font-size: 20px;
   }
 
   .nav-scroll {
@@ -424,7 +449,6 @@ async function logout() {
     justify-content: space-around;
     align-items: center;
     padding: 0;
-    width: 100%;
   }
 
   .nav-item {
