@@ -19,23 +19,18 @@ onMounted(() => {
 const allLinks = [
   // ── Shared ──────────────────────────────────────────────────────────
   { label: 'Dashboard', icon: 'dashboard', to: '/dashboard', roles: ['branch_manager', 'track_admin', 'instructor', 'student'] },
-
-  // ── Admin / Staff ───────────────────────────────────────────────────
-  { label: 'Users',        icon: 'manage_accounts', to: '/users',                  roles: ['branch_manager', 'track_admin'] },
-  { label: 'Tracks',       icon: 'school',          to: '/tracks',                 roles: ['branch_manager', 'track_admin'] },
-  { label: 'Cohorts',      icon: 'groups',          to: '/cohorts',                roles: ['branch_manager', 'track_admin'] },
-  { label: 'Students',     icon: 'group',           to: '/students',               roles: ['branch_manager', 'track_admin', 'instructor'] },
-  { label: 'Instructors',  icon: 'badge',           to: '/instructors',            roles: ['branch_manager', 'track_admin'] },
-  { label: 'Course Setup', icon: 'menu_book',       to: '/scheduling/courses',     roles: ['branch_manager', 'track_admin'] },
-  { label: 'Scheduling',   icon: 'calendar_month',  to: '/scheduling/engagements', roles: ['branch_manager', 'track_admin'] },
-  { label: 'Billing',      icon: 'payments',        to: '/billing',                roles: ['branch_manager'] },
-  { label: 'Reports',      icon: 'analytics',       to: '/reports',                roles: ['branch_manager', 'track_admin'] },
-
-  // ── Student Portal ──────────────────────────────────────────────────
-  { label: 'Attendance',    icon: 'event_available', to: '/attendance/ledger', roles: ['student'] },
-  { label: 'QR Scanner',   icon: 'qr_code_scanner', to: '/attendance/scan',   roles: ['student'], mobileOnly: true },
-  { label: 'Grades',       icon: 'grade',           to: '/student/grades',    roles: ['student'] },
-  { label: 'Submit Excuse', icon: 'description',    to: '/excuses/submit',    roles: ['student'] },
+  { label: 'Users', icon: 'manage_accounts', to: '/users', roles: ['branch_manager', 'track_admin'] },
+  { label: 'Tracks', icon: 'school', to: '/tracks', roles: ['branch_manager', 'track_admin'] },
+  { label: 'Cohorts', icon: 'groups', to: '/cohorts', roles: ['branch_manager', 'track_admin'] },
+  { label: 'Students', icon: 'group', to: '/students', roles: ['branch_manager', 'track_admin', 'instructor'] },
+  { label: 'Instructors', icon: 'badge', to: '/instructors', roles: ['branch_manager', 'track_admin'] },
+  { label: 'Grade Entry', icon: 'edit_note', to: '/grading/entry', roles: ['branch_manager', 'track_admin', 'instructor'] },
+  { label: 'Grade Cards', icon: 'grading', to: '/grading/students', roles: ['branch_manager', 'track_admin', 'instructor'] },
+  { label: 'Tags & Notes', icon: 'sell', to: '/grading/tags-notes', roles: ['branch_manager', 'track_admin', 'instructor'] },
+  { label: 'Course Setup', icon: 'menu_book', to: '/scheduling/courses', roles: ['branch_manager', 'track_admin'] },
+  { label: 'Scheduling', icon: 'calendar_month', to: '/scheduling/engagements', roles: ['branch_manager', 'track_admin'] },
+  { label: 'Billing', icon: 'payments', to: '/billing', roles: ['branch_manager'] },
+  { label: 'Reports', icon: 'analytics', to: '/reports', roles: ['branch_manager', 'track_admin'] },
 ]
 
 const links = computed(() =>

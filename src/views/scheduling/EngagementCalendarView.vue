@@ -48,6 +48,8 @@ const loadingSessions = ref(false)
 // schedule modal (also reused for editing)
 const scheduleOpen = ref(false)
 const editingId = ref(null) // engagement id when the modal is in edit mode
+const modalError = ref('') // shown inside the schedule dialog, not on the page
+const submitting = ref(false) // guards against double-submitting the dialog
 const blankSchedule = () => ({ course_id: '', instructor_id: '', type: 'lecture', date_range_start: '', date_range_end: '', scheduled_hours: 10 })
 const scheduleForm = ref(blankSchedule())
 
@@ -124,12 +126,14 @@ function closeDrawer() {
 
 function openSchedule() {
   editingId.value = null
+  modalError.value = ''
   scheduleForm.value = blankSchedule()
   scheduleOpen.value = true
 }
 
 function openEdit(engagement) {
   editingId.value = engagement.id
+  modalError.value = ''
   scheduleForm.value = {
     course_id: engagement.course_id || '',
     instructor_id: engagement.instructor_id || '',
@@ -144,16 +148,23 @@ function openEdit(engagement) {
 function closeSchedule() {
   scheduleOpen.value = false
   editingId.value = null
+  modalError.value = ''
   scheduleForm.value = blankSchedule()
 }
 
 async function submitSchedule() {
   const f = scheduleForm.value
+  modalError.value = ''
   if (!f.date_range_start || !f.date_range_end) {
-    error.value = 'Pick a start and end date.'
+    modalError.value = 'Pick a start and end date.'
     return
   }
-  error.value = ''
+  if (f.date_range_end < f.date_range_start) {
+    modalError.value = 'End date must be on or after the start date.'
+    return
+  }
+  if (submitting.value) return // ignore a second click while the first is in flight
+  submitting.value = true
   const payload = {
     cohort_id: cohortId.value,
     type: f.type,
@@ -175,7 +186,9 @@ async function submitSchedule() {
     }
     closeSchedule()
   } catch (e) {
-    error.value = store.error || (editingId.value ? 'Could not update the engagement.' : 'Could not schedule the engagement.')
+    modalError.value = store.error || (editingId.value ? 'Could not update the engagement.' : 'Could not schedule the engagement.')
+  } finally {
+    submitting.value = false
   }
 }
 
@@ -183,15 +196,37 @@ async function submitGenerate() {
   if (!selected.value) return
   error.value = ''
   try {
-    const rows = await store.generateSessions(selected.value.id, {
+    await store.generateSessions(selected.value.id, {
       start_time: genForm.value.start_time,
       end_time: genForm.value.end_time,
       scheduled_hours: Number(genForm.value.scheduled_hours),
     })
-    sessions.value = [...rows]
+    // reload the full list so it reflects the real server state (no stale rows)
+    sessions.value = [...(await store.fetchSessions(selected.value.id))]
     genForm.value = blankGen()
   } catch (e) {
     error.value = store.error || 'Could not generate sessions.'
+  }
+}
+
+function requestRemoveSession(session) {
+  confirmState.value = {
+    open: true,
+    title: 'Delete session',
+    message: `Delete the session on ${fmtDate(session.date)}?`,
+    confirmLabel: 'Delete',
+    action: () => removeSession(session),
+  }
+}
+async function removeSession(session) {
+  error.value = ''
+  const backup = sessions.value
+  sessions.value = sessions.value.filter((s) => s.id !== session.id) // optimistic
+  try {
+    await store.deleteSession(session.id)
+  } catch (e) {
+    sessions.value = backup
+    error.value = store.error || 'Could not delete the session.'
   }
 }
 
@@ -320,7 +355,8 @@ function runConfirm() {
     <Teleport to="body">
       <div v-if="scheduleOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @click.self="closeSchedule()">
         <div class="w-full max-w-lg rounded-xl bg-surface p-6 shadow-[0_20px_60px_rgba(0,0,0,0.18)]">
-          <h3 class="font-h2 text-h2 text-on-surface mb-5">{{ editingId ? 'Edit Engagement' : 'Schedule Engagement' }}</h3>
+          <h3 class="font-h2 text-h2 text-on-surface mb-4">{{ editingId ? 'Edit Engagement' : 'Schedule Engagement' }}</h3>
+          <p v-if="modalError" class="mb-4 rounded-lg bg-danger-mist text-danger border border-danger/20 px-4 py-2 font-body-sm text-body-sm">{{ modalError }}</p>
           <form class="grid grid-cols-2 gap-4" @submit.prevent="submitSchedule">
             <label class="flex flex-col gap-1 col-span-2">
               <span class="font-label text-label text-on-surface-variant">Type</span>
@@ -356,7 +392,7 @@ function runConfirm() {
             </label>
             <div class="col-span-2 flex justify-end gap-3 mt-2">
               <button type="button" class="h-11 px-5 rounded-lg font-label text-label text-on-surface-variant hover:bg-surface-sunken" @click="closeSchedule()">Cancel</button>
-              <button type="submit" class="h-11 px-5 rounded-lg bg-primary-container text-white font-label text-label hover:bg-primary transition-colors">{{ editingId ? 'Save changes' : 'Schedule' }}</button>
+              <button type="submit" :disabled="submitting" class="h-11 px-5 rounded-lg bg-primary-container text-white font-label text-label hover:bg-primary transition-colors disabled:opacity-60">{{ submitting ? 'Saving…' : (editingId ? 'Save changes' : 'Schedule') }}</button>
             </div>
           </form>
         </div>
@@ -404,14 +440,21 @@ function runConfirm() {
               <p v-if="!sessions.length" class="font-body-sm text-body-sm text-on-surface-variant mb-3">No sessions yet. Generate them below.</p>
               <ul v-else class="flex flex-col gap-2 mb-4">
                 <li v-for="s in sessions" :key="s.id" class="flex items-center justify-between gap-2 py-2 px-3 rounded-lg bg-surface-sunken/60">
-                  <div class="font-mono text-mono text-on-surface">{{ fmtDate(s.date) }} · {{ fmtTime(s.start_time) }}–{{ fmtTime(s.end_time) }}</div>
-                  <span v-if="s.is_delivered" class="flex items-center gap-1 font-label text-label text-success"><span class="material-symbols-outlined text-[16px]">check_circle</span>Delivered</span>
-                  <button v-else class="font-label text-label text-primary-container hover:text-primary" @click="markDelivered(s)">Mark delivered</button>
+                  <div class="font-mono text-mono text-on-surface">{{ fmtDate(s.date) }} · {{ fmtTime(s.start_time) }}–{{ fmtTime(s.end_time) }} · {{ s.scheduled_hours }}h</div>
+                  <div class="flex items-center gap-3 shrink-0">
+                    <span v-if="s.is_delivered" class="flex items-center gap-1 font-label text-label text-success"><span class="material-symbols-outlined text-[16px]">check_circle</span>Delivered</span>
+                    <button v-else class="font-label text-label text-primary-container hover:text-primary" @click="markDelivered(s)">Mark delivered</button>
+                    <!-- a delivered session is done and billed, so it cannot be deleted -->
+                    <button v-if="!s.is_delivered" class="text-on-surface-variant hover:text-danger transition-colors" title="Delete session" @click="requestRemoveSession(s)">
+                      <span class="material-symbols-outlined text-[18px]">delete</span>
+                    </button>
+                  </div>
                 </li>
               </ul>
 
-              <!-- generate -->
+              <!-- generate fills any day in the range that has no session yet (no duplicates) -->
               <form class="rounded-lg border border-surface-variant p-3 flex flex-wrap items-end gap-2" @submit.prevent="submitGenerate">
+                <p v-if="sessions.length" class="w-full font-body-sm text-body-sm text-on-surface-variant">Adds a session for any day in the range that doesn't have one.</p>
                 <label class="flex flex-col gap-1">
                   <span class="font-label text-label text-on-surface-variant">Start</span>
                   <input v-model="genForm.start_time" type="time" class="h-9 rounded-lg border border-outline-variant bg-surface px-2 font-mono text-mono" />
