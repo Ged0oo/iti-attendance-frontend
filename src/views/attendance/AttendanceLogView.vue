@@ -19,12 +19,13 @@
           </button>
           <button 
             @click="closeSession" 
-            :disabled="isClosing"
+            :disabled="isClosing || isClosed"
             class="px-5 py-2 bg-danger text-white rounded-lg font-label shadow-sm hover:bg-danger/90 transition-colors flex items-center gap-2 disabled:opacity-70"
           >
             <span v-if="isClosing" class="material-symbols-outlined animate-spin text-[18px]">sync</span>
-            <span v-else class="material-symbols-outlined text-[18px]">lock</span>
-            Close Session
+            <span v-else-if="isClosed" class="material-symbols-outlined text-[18px]">lock</span>
+            <span v-else class="material-symbols-outlined text-[18px]">lock_open</span>
+            {{ isClosed ? 'Session Closed' : 'Close Session' }}
           </button>
         </div>
       </header>
@@ -104,6 +105,7 @@ const sessionId = route.params.id;
 
 const loading = ref(true);
 const isClosing = ref(false);
+const isClosed = ref(false);
 const records = ref([]);
 
 const fetchAttendance = async () => {
@@ -111,9 +113,9 @@ const fetchAttendance = async () => {
   try {
     const response = await api.get(`/sessions/${sessionId}/attendance`);
     records.value = response.data.data || response.data;
+    isClosed.value = !!response.data.session_closed;
   } catch (error) {
     console.error("Failed to fetch attendance:", error);
-    alert("Could not load attendance data.");
   } finally {
     loading.value = false;
   }
@@ -124,18 +126,12 @@ onMounted(() => {
 });
 
 const closeSession = async () => {
-  if (!confirm("Are you sure you want to close this session? Any student who hasn't scanned will be marked absent and receive a 25-point deduction.")) {
-    return;
-  }
-  
   isClosing.value = true;
   try {
     await api.post(`/sessions/${sessionId}/close`);
-    alert("Session closed successfully.");
     await fetchAttendance(); // Refresh to show the new 'absent' records
   } catch (error) {
     console.error("Failed to close session:", error);
-    alert(error.response?.data?.message || "Failed to close the session.");
   } finally {
     isClosing.value = false;
   }
@@ -164,6 +160,17 @@ const getStatusBadgeClass = (status) => {
 
 const formatTime = (dateStr) => {
   if (!dateStr) return '--:--';
-  return new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit' }).format(new Date(dateStr));
+  if (typeof dateStr === 'string' && /^\d{1,2}:\d{2}\s*(?:AM|PM)$/i.test(dateStr.trim())) {
+    return dateStr;
+  }
+  try {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) {
+      return dateStr;
+    }
+    return new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit' }).format(date);
+  } catch (e) {
+    return dateStr;
+  }
 };
 </script>

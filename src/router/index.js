@@ -39,12 +39,17 @@ const router = createRouter({
 router.beforeEach((to, _from) => {
   const auth = useAuthStore()
 
+  if (auth.isAuthenticated && to.meta.requiresAuth === false) {
+    return { name: 'dashboard' }
+  }
+
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
     return { name: 'login' }
   }
 
   // signed in but not allowed here: send them to their own dashboard, not the login page
-  if (to.meta.roles && !to.meta.roles.includes(auth.userRole)) {
+  const allowedRoles = to.meta.roles || to.meta.allowedRoles;
+  if (allowedRoles && !allowedRoles.includes(auth.userRole)) {
     if (!auth.isAuthenticated) return { name: 'login' }
     const home = HOME_BY_ROLE[auth.userRole]
     return home && home !== to.name ? { name: home } : { name: 'login' }

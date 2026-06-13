@@ -128,7 +128,6 @@ const reviewExcuse = async (id, decision) => {
     pendingExcuses.value = pendingExcuses.value.filter(excuse => excuse.id !== id);
   } catch (error) {
     console.error(`Failed to ${decision} excuse:`, error);
-    alert(`An error occurred while trying to ${decision} the request.`);
   } finally {
     isProcessing.value = null;
   }

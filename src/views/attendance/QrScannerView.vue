@@ -194,9 +194,21 @@ let requestAnimationId = null
 const startCamera = async () => {
   try {
     cameraError.value = false
-    stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment' }
-    })
+    
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      throw new Error("navigator.mediaDevices.getUserMedia is undefined. Ensure you are using HTTPS or localhost.")
+    }
+    
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' }
+      })
+    } catch (envError) {
+      console.warn("Failed to initialize camera with environment facingMode constraint:", envError)
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: true
+      })
+    }
     
     if (displayVideoEl.value) {
       displayVideoEl.value.srcObject = stream
@@ -205,6 +217,7 @@ const startCamera = async () => {
       requestAnimationId = requestAnimationFrame(tick)
     }
   } catch (error) {
+    console.error("Camera start up error details:", error)
     cameraError.value = true
   }
 }
@@ -261,7 +274,8 @@ const tick = () => {
 }
 
 const handleScan = async (qrValue) => {
-  await attendanceStore.submitScan(qrValue)
+  const studentId = authStore.user?.student_id
+  await attendanceStore.submitScan(qrValue, studentId)
   // If the scan resulted in an error state or success, we stay in that state.
   // The UI will show the "Scan Again" button which resets the store state.
 }

@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import MainLayout from '../../components/layout/MainLayout.vue'
@@ -114,12 +114,10 @@ onMounted(async () => {
   loading.value = true
   try {
     if (!store.cohorts.length) await store.fetchCohorts()
-    const found = store.cohorts.find((c) => String(c.id) === String(cohortId))
-    if (found) {
-      cohort.value = found
-    } else {
-      const { data } = await store.fetchCohorts()
-      cohort.value = (data ?? store.cohorts).find((c) => String(c.id) === String(cohortId))
+    cohort.value = store.cohorts.find((c) => String(c.id) === String(cohortId)) || null
+    if (!cohort.value) {
+      await store.fetchCohort(cohortId)
+      cohort.value = store.currentCohort
     }
     if (cohort.value) {
       basicForm.value.name = cohort.value.name || ''

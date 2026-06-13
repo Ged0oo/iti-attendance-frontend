@@ -32,27 +32,28 @@ export const useEngagementStore = defineStore('engagement', {
       }
     },
 
-    // cohorts are paginated, so pull every page for the picker
+    // list endpoints are paginated; pull every page (also fine for plain arrays)
+    async _all(url, params = {}) {
+      const out = []
+      let page = 1
+      let last = 1
+      do {
+        const { data } = await api.get(url, { params: { ...params, page } })
+        out.push(...(data.data ?? data ?? []))
+        last = data.last_page ?? data.meta?.last_page ?? page
+        page += 1
+      } while (page <= last)
+      return out
+    },
+
     fetchCohorts() {
-      return this._run(async () => {
-        const out = []
-        let page = 1
-        let last = 1
-        do {
-          const { data } = await api.get('/api/cohorts', { params: { page } })
-          out.push(...(data.data ?? data ?? []))
-          last = data.last_page ?? data.meta?.last_page ?? page
-          page += 1
-        } while (page <= last)
-        return out
-      })
+      return this._run(() => this._all('/api/cohorts'))
     },
 
     // --- Courses ---
     fetchCourses(cohortId) {
       return this._run(async () => {
-        const { data } = await api.get(`/api/cohorts/${cohortId}/courses`)
-        this.courses = data.data ?? data
+        this.courses = await this._all(`/api/cohorts/${cohortId}/courses`)
         return this.courses
       })
     },
@@ -81,8 +82,7 @@ export const useEngagementStore = defineStore('engagement', {
     // --- Grade components ---
     fetchComponents(courseId) {
       return this._run(async () => {
-        const { data } = await api.get(`/api/courses/${courseId}/components`)
-        this.gradeComponents = data.data ?? data
+        this.gradeComponents = await this._all(`/api/courses/${courseId}/components`)
         return this.gradeComponents
       })
     },
@@ -103,8 +103,7 @@ export const useEngagementStore = defineStore('engagement', {
     // --- Instructors ---
     fetchInstructors() {
       return this._run(async () => {
-        const { data } = await api.get('/api/instructors')
-        this.instructors = data.data ?? data
+        this.instructors = await this._all('/api/instructors')
         return this.instructors
       })
     },
@@ -119,8 +118,7 @@ export const useEngagementStore = defineStore('engagement', {
     // --- Lab groups ---
     fetchLabGroups(cohortId) {
       return this._run(async () => {
-        const { data } = await api.get(`/api/cohorts/${cohortId}/lab-groups`)
-        this.labGroups = data.data ?? data
+        this.labGroups = await this._all(`/api/cohorts/${cohortId}/lab-groups`)
         return this.labGroups
       })
     },
@@ -135,8 +133,7 @@ export const useEngagementStore = defineStore('engagement', {
     // --- Engagements ---
     fetchEngagements(cohortId) {
       return this._run(async () => {
-        const { data } = await api.get(`/api/cohorts/${cohortId}/engagements`)
-        this.engagements = data.data ?? data
+        this.engagements = await this._all(`/api/cohorts/${cohortId}/engagements`)
         return this.engagements
       })
     },
@@ -159,8 +156,7 @@ export const useEngagementStore = defineStore('engagement', {
     // --- Sessions ---
     fetchSessions(engagementId) {
       return this._run(async () => {
-        const { data } = await api.get(`/api/engagements/${engagementId}/sessions`)
-        this.sessions = data.data ?? data
+        this.sessions = await this._all(`/api/engagements/${engagementId}/sessions`)
         return this.sessions
       })
     },
