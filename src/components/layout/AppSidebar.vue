@@ -1,12 +1,15 @@
+<!-- eslint-disable vue/block-lang -->
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../../composables/useAuth'
 import { useAuthStore } from '../../stores/auth'
+import { useSidebar } from '../../composables/useSidebar'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const { currentUser, userRole } = useAuth()
+const { isCollapsed, toggle } = useSidebar()
 
 // Detect mobile on mount (same logic as QrScannerView)
 const isMobile = ref(true)
@@ -48,7 +51,6 @@ const links = computed(() =>
 )
 
 const userName = computed(() => currentUser.value?.name || 'User')
-const userEmail = computed(() => currentUser.value?.email || '')
 const userInitials = computed(() => {
   const parts = (currentUser.value?.name || 'U').split(' ')
   return parts.length > 1
@@ -73,7 +75,16 @@ async function logout() {
 </script>
 
 <template>
-  <nav class="sidebar">
+  <nav class="sidebar" :class="{ 'sidebar--collapsed': isCollapsed }">
+    <!-- Toggle button -->
+    <button 
+      class="sidebar-toggle hidden lg:flex" 
+      :aria-label="isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+      @click="toggle"
+    >
+      <span class="material-symbols-outlined">{{ isCollapsed ? 'chevron_right' : 'chevron_left' }}</span>
+    </button>
+
     <!-- ── Brand wordmark ─────────────────────────── -->
     <div class="brand">
       <div class="brand-acronym">ITI</div>
@@ -93,6 +104,7 @@ async function logout() {
         class="nav-item"
         active-class="nav-item--active"
         exact-active-class="nav-item--active"
+        :data-tooltip="link.label"
       >
         <span class="nav-icon material-symbols-outlined">{{ link.icon }}</span>
         <span class="nav-label">{{ link.label }}</span>
@@ -129,6 +141,8 @@ async function logout() {
   /* Subtle right-edge glow */
   box-shadow: 1px 0 0 rgba(139, 26, 26, 0.18), 4px 0 32px rgba(0, 0, 0, 0.4);
   overflow: hidden;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+  will-change: width;
 }
 
 /* Top crimson accent line */
@@ -394,6 +408,132 @@ async function logout() {
 
 .logout-btn .material-symbols-outlined {
   font-size: 16px;
+}
+
+/* ── Collapsible Desktop Styles ────────────────────────────────────── */
+@media (min-width: 1024px) {
+  .sidebar--collapsed {
+    width: 72px;
+  }
+
+  .sidebar--collapsed:hover {
+    width: 240px;
+    box-shadow: 4px 0 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(139, 26, 26, 0.25);
+  }
+
+  /* Brand transitions */
+  .brand-text, .brand-dot {
+    transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s ease, visibility 0.25s ease;
+  }
+
+  .sidebar--collapsed:not(:hover) .brand-text {
+    opacity: 0;
+    transform: translateX(-10px);
+    visibility: hidden;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+  }
+
+  .sidebar--collapsed:not(:hover) .brand-dot {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .sidebar--collapsed:not(:hover) .brand {
+    justify-content: center;
+    padding: 28px 0 24px 0;
+  }
+
+  .brand {
+    transition: padding 0.3s ease, justify-content 0.3s ease;
+  }
+
+  /* Nav items transitions */
+  .nav-label {
+    transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s ease, visibility 0.25s ease;
+  }
+
+  .sidebar--collapsed:not(:hover) .nav-label {
+    opacity: 0;
+    transform: translateX(-10px);
+    visibility: hidden;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+  }
+
+  .sidebar--collapsed:not(:hover) .nav-item {
+    justify-content: center;
+    padding: 9px 0;
+    gap: 0;
+  }
+
+  .nav-item {
+    transition: color 0.18s ease, background 0.18s ease, padding 0.3s ease, gap 0.3s ease;
+  }
+
+  /* User footer transitions */
+  .user-info, .logout-btn {
+    transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s ease, visibility 0.25s ease;
+  }
+
+  .sidebar--collapsed:not(:hover) .user-info {
+    opacity: 0;
+    transform: translateX(-10px);
+    visibility: hidden;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+  }
+
+  .sidebar--collapsed:not(:hover) .logout-btn {
+    opacity: 0;
+    visibility: hidden;
+    width: 0;
+    height: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .sidebar--collapsed:not(:hover) .user-footer {
+    justify-content: center;
+    padding: 14px 0 20px 0;
+  }
+
+  .user-footer {
+    transition: padding 0.3s ease, justify-content 0.3s ease;
+  }
+
+  /* Floating Toggle Button */
+  .sidebar-toggle {
+    position: absolute;
+    top: 28px;
+    right: -12px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #0E0505;
+    border: 1px solid rgba(139, 26, 26, 0.35);
+    color: #FFFFFF;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 50;
+  }
+
+  .sidebar-toggle:hover {
+    background: #8B1A1A;
+    border-color: #8B1A1A;
+    box-shadow: 0 0 8px rgba(139, 26, 26, 0.6);
+  }
+
+  .sidebar-toggle span {
+    font-size: 16px;
+  }
 }
 
 /* ── Mobile View (Bottom Navigation) ───────────────────────────────── */
