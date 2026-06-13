@@ -350,8 +350,9 @@ onMounted(async () => {
                 <div class="grid gap-3 md:grid-cols-[minmax(160px,1fr)_minmax(160px,1fr)_auto] md:items-end">
                     <label class="space-y-1.5">
                         <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Student</span>
-                        <select v-model="newGrade.student_id" class="h-10 w-full rounded-lg border-slate-200 text-sm disabled:bg-slate-100" :disabled="!activeComponent || studentOptions.length === 0">
+                        <select v-model="newGrade.student_id" class="h-10 w-full rounded-lg border-slate-200 text-sm disabled:bg-slate-100" :disabled="!activeComponent">
                             <option value="">Select student</option>
+                            <option v-if="studentOptions.length === 0" value="" disabled>No students loaded</option>
                             <option v-for="student in studentOptions" :key="student.id" :value="student.id">
                                 {{ student.name }}
                             </option>
