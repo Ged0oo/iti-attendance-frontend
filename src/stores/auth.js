@@ -1,5 +1,6 @@
-import { defineStore } from "pinia";
-import axios from "axios";
+import { defineStore } from 'pinia'
+import api from '@/services/api.js'
+
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
@@ -18,18 +19,7 @@ export const useAuthStore = defineStore("auth", {
       this.error = null;
 
       try {
-        const response = await axios.post(
-          `${import.meta.env.VITE_API_BASE_URL}/api/login`,
-          {
-            email,
-            password,
-          },
-          {
-            headers: {
-              Accept: "application/json",
-            },
-          },
-        );
+        const response = await api.post('/login', { email, password });
 
         this.user = response.data.user;
         this.token = response.data.token;
@@ -43,35 +33,34 @@ export const useAuthStore = defineStore("auth", {
         this.loading = false;
       }
     },
+
     async fetchMe() {
       this.loading = true;
       this.error = null;
       try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/api/me`,
-          {
-            headers: {
-              Accept: "application/json",
-              Authorization: `Bearer ${this.token}`,
-            },
-          },
-        );
+        const response = await api.get('/me');
+
         this.user = response.data;
-        localStorage.setItem("user", JSON.stringify(this.user));
+        localStorage.setItem('user', JSON.stringify(this.user));
       } catch (error) {
-        this.error = error.response?.data?.message || "Failed to fetch user";
+        this.error = error.response?.data?.message || 'Failed to fetch user';
         throw error;
       } finally {
         this.loading = false;
       }
     },
 
-    logout() {
-      this.user = null;
-      this.token = null;
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      //this token is dummy
-    },
-  },
+    async logout() {
+      try {
+        await api.post('/logout');
+      } catch (err) {
+        console.log('Logout failed', err);
+      } finally {
+        this.user = null
+        this.token = null
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
+      }
+    }
+  }
 });
