@@ -18,8 +18,10 @@ export default defineConfig({
     server: {
         proxy: {
             '/api': {
-                target: 'http://localhost:8000',
+                target: 'https://13.60.179.178',
                 changeOrigin: true,
+                secure: false,      // Accept self-signed / untrusted backend cert
+                // No rewrite needed — backend expects /api/... paths
             }
         },
         watch: {
