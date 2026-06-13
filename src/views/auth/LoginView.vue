@@ -6,9 +6,15 @@
       class="hidden lg:flex w-[45%] bg-[#1A0A0A] relative flex-col justify-center items-center overflow-hidden border-r border-shell-border"
     >
       <!-- Background Image with Red Overlay -->
-      <img src="@/assets/iti-building.png" alt="ITI Building Background" class="absolute inset-0 w-full h-full object-cover z-0" />
-      <div class="absolute inset-0 bg-[#8B1A1A]/80 z-0 mix-blend-multiply"></div>
-      
+      <img
+        src="@/assets/iti-building.png"
+        alt="ITI Building Background"
+        class="absolute inset-0 w-full h-full object-cover z-0"
+      />
+      <div
+        class="absolute inset-0 bg-[#8B1A1A]/80 z-0 mix-blend-multiply"
+      ></div>
+
       <!-- Subtle Radial Glow -->
       <div
         class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(168,32,32,0.4)_0%,_rgba(26,10,10,0)_70%)] z-0"
@@ -18,10 +24,14 @@
       >
         <!-- Typography Group -->
         <div class="space-y-4">
-          <h1 class="font-h1 text-h1 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+          <h1
+            class="font-h1 text-h1 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"
+          >
             Information Technology Institute
           </h1>
-          <p class="font-body-lg text-body-lg text-white/80 max-w-sm mx-auto drop-shadow-md">
+          <p
+            class="font-body-lg text-body-lg text-white/80 max-w-sm mx-auto drop-shadow-md"
+          >
             Powering Egypt's tech talent — one cohort at a time.
           </p>
         </div>
@@ -34,19 +44,19 @@
           </p>
           <div class="flex flex-wrap justify-center gap-3">
             <span
-              class="inline-flex items-center px-4 py-1.5 rounded-full font-label text-label bg- white/10 text-white/90 border border-white/5 backdrop-blur-sm shadow-sm"
+              class="inline-flex items-center px-4 py-1.5 rounded-full font-label text-label bg-white/10 text-white/90 border border-white/5 backdrop-blur-sm shadow-sm"
               >Branch Manager</span
             >
             <span
-              class="inline-flex items-center px-4 py-1.5 rounded-full font-label text-label bg- white/10 text-white/90 border border-white/5 backdrop-blur-sm shadow-sm"
+              class="inline-flex items-center px-4 py-1.5 rounded-full font-label text-label bg-white/10 text-white/90 border border-white/5 backdrop-blur-sm shadow-sm"
               >Track Admin</span
             >
             <span
-              class="inline-flex items-center px-4 py-1.5 rounded-full font-label text-label bg- white/10 text-white/90 border border-white/5 backdrop-blur-sm shadow-sm"
+              class="inline-flex items-center px-4 py-1.5 rounded-full font-label text-label bg-white/10 text-white/90 border border-white/5 backdrop-blur-sm shadow-sm"
               >Instructor</span
             >
             <span
-              class="inline-flex items-center px-4 py-1.5 rounded-full font-label text-label bg- white/10 text-white/90 border border-white/5 backdrop-blur-sm shadow-sm"
+              class="inline-flex items-center px-4 py-1.5 rounded-full font-label text-label bg-white/10 text-white/90 border border-white/5 backdrop-blur-sm shadow-sm"
               >Student</span
             >
           </div>
@@ -59,7 +69,7 @@
 
     <!-- Right Panel (Login Form) -->
     <div
-      class="w-full lg:w-[55%] bg-white flex flex-col justify-center p-margin-mobile md:p-margin- desktop relative"
+      class="w-full lg:w-[55%] bg-white flex flex-col justify-center p-margin-mobile md:p-margin-desktop relative"
     >
       <!-- Mobile Header (Visible only on small screens) -->
       <div
@@ -79,7 +89,7 @@
         </div>
         <div
           v-if="error"
-          class="p-3 bg-danger-mist text-danger font-label rounded-lg border border- danger/20"
+          class="p-3 bg-danger-mist text-danger font-label rounded-lg border border-danger/20"
         >
           {{ error }}
         </div>
@@ -94,7 +104,7 @@
             >
             <input
               v-model="form.email"
-              class="w-full h-[44px] px-3 bg-surface border border-outline/30 rounded-lg text-on- surface focus:outline-none focus:border-primary-deep focus:ring-1 focus:ring-primary-deep/50 transition- all placeholder:text-secondary-fixed-dim"
+              class="w-full h-[44px] px-3 bg-surface border border-outline/30 rounded-lg text-on-surface focus:outline-none focus:border-primary-deep focus:ring-1 focus:ring-primary-deep/50 transition-all placeholder:text-secondary-fixed-dim"
               id="email"
               type="email"
               placeholder="name@iti.gov.eg"
@@ -120,14 +130,14 @@
               <input
                 v-model="form.password"
                 :type="showPassword ? 'text' : 'password'"
-                class="w-full h-[44px] pl-3 pr-16 bg-surface border border-outline/30 rounded-lg text- on-surface focus:outline-none focus:border-primary-deep focus:ring-1 focus:ring-primary-deep/50 transition-all placeholder:text-secondary-fixed-dim"
+                class="w-full h-[44px] pl-3 pr-16 bg-surface border border-outline/30 rounded-lg text-on-surface focus:outline-none focus:border-primary-deep focus:ring-1 focus:ring-primary-deep/50 transition-all placeholder:text-secondary-fixed-dim"
                 id="password"
                 placeholder="Enter your password"
                 required
               />
               <button
                 @click="showPassword = !showPassword"
-                class="absolute inset-y-0 right-0 pr-3 flex items-center font-label text-label text- secondary hover:text-on-surface transition-colors focus:outline-none"
+                class="absolute inset-y-0 right-0 pr-3 flex items-center font-label text-label text-secondary hover:text-on-surface transition-colors focus:outline-none"
                 type="button"
               >
                 {{ showPassword ? "Hide" : "Show" }}
@@ -138,7 +148,7 @@
           <!-- Submit Button -->
           <button
             :disabled="loading"
-            class="w-full h-[48px] mt-2 bg-primary-container text-white font-label text-label rounded- lg hover:bg-primary-deep shadow-[0_2px_10px_rgba(139,26,26,0.15)] hover:shadow-[0_4px_12px_rgba(139,26, 26,0.30)] transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
+            class="w-full h-[48px] mt-2 bg-primary-container text-white font-label text-label rounded-lg hover:bg-primary-deep shadow-[0_2px_10px_rgba(139,26,26,0.15)] hover:shadow-[0_4px_12px_rgba(139,26,26,0.30)] transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed"
             type="submit"
           >
             {{ loading ? "Signing In..." : "Sign In" }}
@@ -176,9 +186,11 @@ import { useRouter } from "vue-router";
 import { useAuth } from "@/composables/useAuth.js";
 
 const router = useRouter();
-const { login, loading, error } = useAuth();
+const { login } = useAuth();
 
 const showPassword = ref(false);
+const error = ref("");
+const loading = ref(false);
 
 const form = reactive({
   email: "",
@@ -186,11 +198,19 @@ const form = reactive({
 });
 
 const handleLogin = async () => {
+  error.value = "";
+  loading.value = true;
+
   try {
     await login(form.email, form.password);
     router.push("/dashboard");
-  } catch {
-    console.error("Login failed");
+  } catch (err) {
+    console.error("Login failed", err);
+    error.value =
+      err.response?.data?.message ||
+      "Login failed. Please check your credentials.";
+  } finally {
+    loading.value = false;
   }
 };
 </script>

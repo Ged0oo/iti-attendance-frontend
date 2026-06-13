@@ -1,5 +1,5 @@
-<script setup >
-import { onMounted, reactive, ref } from 'vue';
+<script setup>
+import { computed, onMounted, reactive, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useGradingStore } from '../../stores/grading';
 import MainLayout from '../../components/layout/MainLayout.vue';
@@ -27,6 +27,25 @@ const noteForm = reactive({
     note: '',
 });
 const notice = ref('');
+const studentSearch = ref('');
+const studentOptions = ref([]);
+const studentSuggestionsOpen = ref(false);
+
+const filteredStudentOptions = computed(() => {
+    const query = studentSearch.value.trim().toLowerCase();
+
+    if (!query) {
+        return studentOptions.value.slice(0, 8);
+    }
+
+    return studentOptions.value
+        .filter((student) => {
+            return student.name.toLowerCase().includes(query)
+                || student.email.toLowerCase().includes(query)
+                || String(student.id).includes(query);
+        })
+        .slice(0, 8);
+});
 
 function params() {
     return Object.fromEntries(
@@ -36,6 +55,57 @@ function params() {
 
 async function load() {
     await grading.fetchTagsAndNotes(params());
+}
+
+async function loadStudentSuggestions() {
+    const cohortIds = [...new Set(courses.value.map((course) => course.cohort_id).filter(Boolean))];
+    const studentsById = new Map();
+
+    for (const cohortId of cohortIds) {
+        const rows = await grading.fetchStudents(cohortId);
+
+        rows.forEach((student) => {
+            studentsById.set(Number(student.id), {
+                id: Number(student.id),
+                name: student.user?.name || `Student #${student.id}`,
+                email: student.user?.email || '',
+            });
+        });
+    }
+
+    studentOptions.value = [...studentsById.values()].sort((a, b) => a.name.localeCompare(b.name));
+
+    if (filters.student_id) {
+        const selected = studentOptions.value.find((student) => String(student.id) === String(filters.student_id));
+        studentSearch.value = selected ? formatStudentSearchLabel(selected) : String(filters.student_id);
+    }
+}
+
+function formatStudentSearchLabel(student) {
+    return student.email ? `${student.name} (${student.email})` : `${student.name} (#${student.id})`;
+}
+
+async function selectStudent(student, shouldLoad = true) {
+    filters.student_id = student.id;
+    studentSearch.value = formatStudentSearchLabel(student);
+    studentSuggestionsOpen.value = false;
+
+    if (shouldLoad) {
+        await load();
+    }
+}
+
+function handleStudentSearchInput() {
+    filters.student_id = '';
+    studentSuggestionsOpen.value = true;
+}
+
+async function applyFilters() {
+    if (!filters.student_id && filteredStudentOptions.value.length > 0) {
+        await selectStudent(filteredStudentOptions.value[0], false);
+    }
+
+    await load();
 }
 
 async function addTag() {
@@ -85,24 +155,51 @@ function tagClass(tag) {
 
 onMounted(async () => {
     await grading.fetchReferenceData();
+    await loadStudentSuggestions();
     await load();
 });
 </script>
 
 <template>
     <MainLayout title="Tags & Notes">
-    <section class="mx-auto max-w-7xl space-y-6">
-        <div class="flex flex-col gap-2">
+    <section class="w-full space-y-6">
+        <div>
             <p class="text-sm font-semibold uppercase tracking-wide text-primary-container">Student support</p>
-            <h1 class="font-serif text-4xl text-on-surface">Tags & Notes</h1>
         </div>
 
         <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div class="grid gap-4 lg:grid-cols-[180px_1fr_auto] lg:items-end">
-                <label class="space-y-2">
-                    <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Student ID</span>
-                    <input v-model="filters.student_id" class="h-11 w-full rounded-lg border-slate-200 text-sm" type="number" placeholder="Student ID" />
-                </label>
+            <div class="grid gap-4 lg:grid-cols-[minmax(280px,1fr)_minmax(220px,1fr)_auto] lg:items-end">
+                <div class="relative space-y-2">
+                    <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Student</span>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
+                        <input
+                            v-model="studentSearch"
+                            class="h-11 w-full rounded-lg border-slate-200 pl-10 pr-3 text-sm"
+                            type="search"
+                            placeholder="Search by name, email, or ID"
+                            @focus="studentSuggestionsOpen = true"
+                            @input="handleStudentSearchInput"
+                            @keydown.escape="studentSuggestionsOpen = false"
+                        />
+                    </div>
+
+                    <div v-if="studentSuggestionsOpen" class="absolute left-0 right-0 top-full z-20 mt-2 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-lg">
+                        <button
+                            v-for="student in filteredStudentOptions"
+                            :key="student.id"
+                            class="block w-full px-4 py-3 text-left text-sm hover:bg-slate-50"
+                            type="button"
+                            @click="selectStudent(student)"
+                        >
+                            <span class="block font-medium text-on-surface">{{ student.name }}</span>
+                            <span class="block text-xs text-slate-500">{{ student.email || `Student #${student.id}` }}</span>
+                        </button>
+                        <div v-if="filteredStudentOptions.length === 0" class="px-4 py-3 text-sm text-slate-500">
+                            No students found.
+                        </div>
+                    </div>
+                </div>
                 <label class="space-y-2">
                     <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Course</span>
                     <select v-model="filters.course_id" class="h-11 w-full rounded-lg border-slate-200 text-sm">
@@ -112,7 +209,7 @@ onMounted(async () => {
                         </option>
                     </select>
                 </label>
-                <button class="h-11 rounded-lg border border-slate-200 px-5 text-sm font-semibold hover:bg-slate-50" :disabled="loading" @click="load">
+                <button class="h-11 rounded-lg border border-slate-200 px-5 text-sm font-semibold hover:bg-slate-50" :disabled="loading" @click="applyFilters">
                     Apply filters
                 </button>
             </div>
