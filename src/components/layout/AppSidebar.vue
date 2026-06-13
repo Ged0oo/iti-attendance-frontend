@@ -1,17 +1,18 @@
 <!-- eslint-disable vue/block-lang -->
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuth } from '../../composables/useAuth'
 import { useAuthStore } from '../../stores/auth'
 import { useSidebar } from '../../composables/useSidebar'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 const { currentUser, userRole } = useAuth()
 const { isCollapsed, toggle } = useSidebar()
 
-// Detect mobile on mount (same logic as QrScannerView)
+// Detect mobile on mount
 const isMobile = ref(true)
 onMounted(() => {
   const uaTouch = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
@@ -19,27 +20,38 @@ onMounted(() => {
   isMobile.value = uaTouch || (hasTouch && window.innerWidth < 1024)
 })
 
+// Mobile "More" drawer
+const mobileDrawerOpen = ref(false)
+watch(() => route.path, () => { mobileDrawerOpen.value = false })
+
+// mobilePrimary = roles for which this link appears directly in the mobile bottom bar.
+// Max 4 primary items per role — everything else goes in the "More" drawer.
 const allLinks = [
   // ── Shared ──────────────────────────────────────────────────────────
-  { label: 'Dashboard', icon: 'dashboard', to: '/dashboard', roles: ['branch_manager', 'track_admin', 'instructor', 'student'] },
-  { label: 'Users', icon: 'manage_accounts', to: '/users', roles: ['branch_manager', 'track_admin'] },
-  { label: 'Tracks', icon: 'school', to: '/tracks', roles: ['branch_manager', 'track_admin'] },
-  { label: 'Cohorts', icon: 'groups', to: '/cohorts', roles: ['branch_manager', 'track_admin'] },
-  { label: 'Students', icon: 'group', to: '/students', roles: ['branch_manager', 'track_admin', 'instructor'] },
-  { label: 'Instructors', icon: 'badge', to: '/instructors', roles: ['branch_manager', 'track_admin'] },
-  { label: 'Grade Entry', icon: 'edit_note', to: '/grading/entry', roles: ['branch_manager', 'track_admin', 'instructor'] },
-  { label: 'Grade Cards', icon: 'grading', to: '/grading/students', roles: ['branch_manager', 'track_admin', 'instructor'] },
-  { label: 'Tags & Notes', icon: 'sell', to: '/grading/tags-notes', roles: ['branch_manager', 'track_admin', 'instructor'] },
-  { label: 'Course Setup', icon: 'menu_book', to: '/scheduling/courses', roles: ['branch_manager', 'track_admin'] },
-  { label: 'Scheduling', icon: 'calendar_month', to: '/scheduling/engagements', roles: ['branch_manager', 'track_admin'] },
-  { label: 'Billing', icon: 'payments', to: '/billing', roles: ['branch_manager'] },
+  { label: 'Dashboard',    icon: 'dashboard',       to: '/dashboard',              roles: ['branch_manager', 'track_admin', 'instructor', 'student'], mobilePrimary: ['branch_manager', 'track_admin', 'instructor', 'student'] },
+  { label: 'Users',        icon: 'manage_accounts', to: '/users',                  roles: ['branch_manager', 'track_admin'] },
+  { label: 'Tracks',       icon: 'school',          to: '/tracks',                 roles: ['branch_manager', 'track_admin'],                            mobilePrimary: ['branch_manager'] },
+  { label: 'Cohorts',      icon: 'groups',          to: '/cohorts',                roles: ['branch_manager', 'track_admin'],                            mobilePrimary: ['track_admin'] },
+  { label: 'Students',     icon: 'group',           to: '/students',               roles: ['branch_manager', 'track_admin', 'instructor'],               mobilePrimary: ['branch_manager', 'track_admin', 'instructor'] },
+  { label: 'Instructors',  icon: 'badge',           to: '/instructors',            roles: ['branch_manager', 'track_admin'] },
+  { label: 'Grade Entry',  icon: 'edit_note',       to: '/grading/entry',          roles: ['branch_manager', 'track_admin', 'instructor'],               mobilePrimary: ['instructor'] },
+  { label: 'Grade Cards',  icon: 'grading',         to: '/grading/students',       roles: ['branch_manager', 'track_admin', 'instructor'] },
+  { label: 'Tags & Notes', icon: 'sell',            to: '/grading/tags-notes',     roles: ['branch_manager', 'track_admin', 'instructor'] },
+  { label: 'Course Setup', icon: 'menu_book',       to: '/scheduling/courses',     roles: ['branch_manager', 'track_admin'] },
+  { label: 'Scheduling',   icon: 'calendar_month',  to: '/scheduling/engagements', roles: ['branch_manager', 'track_admin'] },
+  { label: 'Billing',      icon: 'payments',        to: '/billing',                roles: ['branch_manager'] },
 
   // ── Student Portal ──────────────────────────────────────────────────
-  { label: 'Attendance',    icon: 'event_available', to: '/attendance/ledger', roles: ['student'] },
-  { label: 'QR Scanner',   icon: 'qr_code_scanner', to: '/attendance/scan',   roles: ['student'], mobileOnly: true },
-  { label: 'Grades',       icon: 'grade',           to: '/student/grades',    roles: ['student'] },
-  { label: 'Submit Excuse', icon: 'description',    to: '/excuses/submit',    roles: ['student'] },
-  { label: 'My Profile',   icon: 'account_circle',  to: '/student/profile',  roles: ['student'] },
+  { label: 'Attendance',   icon: 'event_available', to: '/attendance/ledger', roles: ['student'],           mobilePrimary: ['student'] },
+  { label: 'QR Scanner',  icon: 'qr_code_scanner', to: '/attendance/scan',   roles: ['student'], mobileOnly: true },
+  { label: 'Grades',       icon: 'grade',           to: '/student/grades',    roles: ['student'],           mobilePrimary: ['student'] },
+  { label: 'Submit Excuse',icon: 'description',     to: '/excuses/submit',    roles: ['student'] },
+
+  // ── Profile (all roles) ─────────────────────────────────────────────
+  { label: 'My Profile',   icon: 'account_circle',  to: '/student/profile',        roles: ['student'],        mobilePrimary: ['student'] },
+  { label: 'My Profile',   icon: 'account_circle',  to: '/instructor/profile',     roles: ['instructor'],     mobilePrimary: ['instructor'] },
+  { label: 'My Profile',   icon: 'account_circle',  to: '/track-admin/profile',    roles: ['track_admin'],    mobilePrimary: ['track_admin'] },
+  { label: 'My Profile',   icon: 'account_circle',  to: '/branch-manager/profile', roles: ['branch_manager'], mobilePrimary: ['branch_manager'] },
 ]
 
 const links = computed(() =>
@@ -48,6 +60,19 @@ const links = computed(() =>
     if (link.mobileOnly && !isMobile.value) return false
     return true
   }),
+)
+
+// Mobile bottom-bar: only the flagged primary links for the current role
+const mobilePrimaryLinks = computed(() =>
+  links.value.filter(l => l.mobilePrimary?.includes(userRole.value))
+)
+// Mobile drawer: everything that didn't fit in the bar
+const mobileMoreLinks = computed(() =>
+  links.value.filter(l => !l.mobilePrimary?.includes(userRole.value))
+)
+// Desktop shows all links; mobile only shows primary
+const visibleLinks = computed(() =>
+  isMobile.value ? mobilePrimaryLinks.value : links.value
 )
 
 const userName = computed(() => currentUser.value?.name || 'User')
@@ -98,7 +123,7 @@ async function logout() {
     <!-- ── Navigation ────────────────────────────── -->
     <div class="nav-scroll">
       <router-link
-        v-for="link in links"
+        v-for="link in visibleLinks"
         :key="link.to"
         :to="link.to"
         class="nav-item"
@@ -110,6 +135,18 @@ async function logout() {
         <span class="nav-label">{{ link.label }}</span>
         <span class="nav-glow"></span>
       </router-link>
+
+      <!-- More button: mobile only, shown when overflow links exist -->
+      <button
+        v-if="isMobile && mobileMoreLinks.length > 0"
+        class="nav-item nav-item--more"
+        :class="{ 'nav-item--active': mobileDrawerOpen }"
+        aria-label="More navigation options"
+        @click="mobileDrawerOpen = !mobileDrawerOpen"
+      >
+        <span class="nav-icon material-symbols-outlined">grid_view</span>
+        <span class="nav-label">More</span>
+      </button>
     </div>
 
     <!-- ── User footer ───────────────────────────── -->
@@ -123,15 +160,51 @@ async function logout() {
         <span class="material-symbols-outlined">logout</span>
       </button>
     </div>
+
+    <!-- ── Mobile "More" slide-up drawer ────────── -->
+    <Transition name="drawer">
+      <div
+        v-if="mobileDrawerOpen"
+        class="drawer-backdrop"
+        @click.self="mobileDrawerOpen = false"
+      >
+        <div class="drawer-panel" role="dialog" aria-label="More navigation">
+          <!-- Handle bar -->
+          <div class="drawer-handle"></div>
+
+          <!-- Header -->
+          <div class="drawer-header">
+            <span class="drawer-title">Navigation</span>
+            <button class="drawer-close" aria-label="Close" @click="mobileDrawerOpen = false">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          <!-- Link grid -->
+          <div class="drawer-grid">
+            <router-link
+              v-for="link in mobileMoreLinks"
+              :key="link.to"
+              :to="link.to"
+              class="drawer-item"
+              active-class="drawer-item--active"
+            >
+              <span class="material-symbols-outlined drawer-item-icon">{{ link.icon }}</span>
+              <span class="drawer-item-label">{{ link.label }}</span>
+            </router-link>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </nav>
 </template>
 
 <style scoped>
 /* ── Shell ─────────────────────────────────────────────────────────── */
 .sidebar {
-  position: fixed;
-  left: 0;
+  position: sticky;
   top: 0;
+  flex-shrink: 0;
   width: 240px;
   height: 100vh;
   background: #0E0505;
@@ -140,7 +213,6 @@ async function logout() {
   z-index: 50;
   /* Subtle right-edge glow */
   box-shadow: 1px 0 0 rgba(139, 26, 26, 0.18), 4px 0 32px rgba(0, 0, 0, 0.4);
-  overflow: hidden;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
   will-change: width;
 }
@@ -416,17 +488,12 @@ async function logout() {
     width: 72px;
   }
 
-  .sidebar--collapsed:hover {
-    width: 240px;
-    box-shadow: 4px 0 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(139, 26, 26, 0.25);
-  }
-
   /* Brand transitions */
   .brand-text, .brand-dot {
     transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s ease, visibility 0.25s ease;
   }
 
-  .sidebar--collapsed:not(:hover) .brand-text {
+  .sidebar--collapsed .brand-text {
     opacity: 0;
     transform: translateX(-10px);
     visibility: hidden;
@@ -435,12 +502,12 @@ async function logout() {
     overflow: hidden;
   }
 
-  .sidebar--collapsed:not(:hover) .brand-dot {
+  .sidebar--collapsed .brand-dot {
     opacity: 0;
     visibility: hidden;
   }
 
-  .sidebar--collapsed:not(:hover) .brand {
+  .sidebar--collapsed .brand {
     justify-content: center;
     padding: 28px 0 24px 0;
   }
@@ -454,7 +521,7 @@ async function logout() {
     transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s ease, visibility 0.25s ease;
   }
 
-  .sidebar--collapsed:not(:hover) .nav-label {
+  .sidebar--collapsed .nav-label {
     opacity: 0;
     transform: translateX(-10px);
     visibility: hidden;
@@ -463,7 +530,7 @@ async function logout() {
     overflow: hidden;
   }
 
-  .sidebar--collapsed:not(:hover) .nav-item {
+  .sidebar--collapsed .nav-item {
     justify-content: center;
     padding: 9px 0;
     gap: 0;
@@ -478,7 +545,7 @@ async function logout() {
     transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s ease, visibility 0.25s ease;
   }
 
-  .sidebar--collapsed:not(:hover) .user-info {
+  .sidebar--collapsed .user-info {
     opacity: 0;
     transform: translateX(-10px);
     visibility: hidden;
@@ -487,7 +554,7 @@ async function logout() {
     overflow: hidden;
   }
 
-  .sidebar--collapsed:not(:hover) .logout-btn {
+  .sidebar--collapsed .logout-btn {
     opacity: 0;
     visibility: hidden;
     width: 0;
@@ -496,7 +563,7 @@ async function logout() {
     overflow: hidden;
   }
 
-  .sidebar--collapsed:not(:hover) .user-footer {
+  .sidebar--collapsed .user-footer {
     justify-content: center;
     padding: 14px 0 20px 0;
   }
@@ -539,6 +606,7 @@ async function logout() {
 /* ── Mobile View (Bottom Navigation) ───────────────────────────────── */
 @media (max-width: 1023px) {
   .sidebar {
+    position: fixed;
     top: auto;
     bottom: 0;
     width: 100%;
@@ -626,5 +694,159 @@ async function logout() {
     height: 3px;
     border-radius: 0 0 3px 3px;
   }
+
+  /* More button resets (no left indicator bar on mobile) */
+  .nav-item--more {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+  .nav-item--more.nav-item--active {
+    color: #E57373 !important;
+    background: rgba(139, 26, 26, 0.18) !important;
+    border: none;
+  }
+  .nav-item--more.nav-item--active::before { display: none; }
+}
+
+/* ======================================================
+   Mobile Drawer
+   ====================================================== */
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: flex-end;
+}
+
+.drawer-panel {
+  width: 100%;
+  background: #160808;
+  border-radius: 20px 20px 0 0;
+  border-top: 1px solid rgba(139, 26, 26, 0.25);
+  border-left: 1px solid rgba(139, 26, 26, 0.12);
+  border-right: 1px solid rgba(139, 26, 26, 0.12);
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+  max-height: 72vh;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.drawer-panel::-webkit-scrollbar { display: none; }
+
+.drawer-handle {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.15);
+  margin: 10px auto 4px;
+}
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 20px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.drawer-title {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.9);
+  letter-spacing: 0.02em;
+}
+
+.drawer-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.06);
+  border: none;
+  color: rgba(255,255,255,0.5);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.drawer-close:hover {
+  background: rgba(139,26,26,0.25);
+  color: #E57373;
+}
+.drawer-close .material-symbols-outlined { font-size: 18px; }
+
+.drawer-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  padding: 14px 12px;
+}
+
+.drawer-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 14px 8px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.04);
+  background: rgba(255,255,255,0.03);
+  text-decoration: none;
+  color: rgba(255,255,255,0.55);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.drawer-item:active,
+.drawer-item:hover {
+  background: rgba(139, 26, 26, 0.2);
+  border-color: rgba(139, 26, 26, 0.3);
+  color: rgba(255,255,255,0.9);
+}
+.drawer-item--active {
+  background: rgba(139, 26, 26, 0.22) !important;
+  border-color: rgba(139, 26, 26, 0.4) !important;
+  color: #fff !important;
+}
+.drawer-item--active .drawer-item-icon {
+  color: #E57373;
+  font-variation-settings: 'FILL' 1, 'wght' 400;
+}
+
+.drawer-item-icon {
+  font-size: 24px;
+  font-variation-settings: 'FILL' 0, 'wght' 300;
+  transition: color 0.15s ease;
+}
+
+.drawer-item-label {
+  font-family: "DM Sans", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Drawer transition */
+.drawer-enter-active,
+.drawer-leave-active {
+  transition: opacity 0.25s ease;
+}
+.drawer-enter-active .drawer-panel,
+.drawer-leave-active .drawer-panel {
+  transition: transform 0.3s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+.drawer-enter-from,
+.drawer-leave-to {
+  opacity: 0;
+}
+.drawer-enter-from .drawer-panel,
+.drawer-leave-to .drawer-panel {
+  transform: translateY(100%);
 }
 </style>
