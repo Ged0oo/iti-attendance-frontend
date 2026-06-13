@@ -6,6 +6,12 @@ export default [
     meta: { requiresAuth: true, roles: ['branch_manager', 'track_admin'] },
   },
   {
+    path: '/cohorts',
+    name: 'cohorts',
+    component: () => import('../views/cohorts/CohortListView.vue'),
+    meta: { requiresAuth: true, roles: ['branch_manager', 'track_admin'] },
+  },
+  {
     path: '/cohorts/:id/config',
     name: 'cohort-config',
     component: () => import('../views/cohorts/CohortConfigView.vue'),

@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import MainLayout from '../../components/layout/MainLayout.vue'
 import { useCohortStore } from '../../stores/cohort'
+import { initials } from '../../composables/useUtils'
 
 const store = useCohortStore()
 
@@ -10,7 +11,7 @@ const atRiskList = ref([])
 const distribution = ref(null)
 
 const activeCohort = computed(
-  () => store.cohorts.find((c) => c.name === 'Intake 46') || store.cohorts[0] || null,
+  () => store.cohorts.find((c) => c.status !== 'rolled_up') || store.cohorts[0] || null,
 )
 
 const kpis = computed(() => [
@@ -29,10 +30,6 @@ const gradeBars = computed(() => {
 })
 
 const hasGrades = computed(() => (distribution.value?.student_course_count ?? 0) > 0)
-
-function initials(name) {
-  return (name || '?').split(' ').map((w) => w.charAt(0)).join('').slice(0, 2).toUpperCase()
-}
 
 onMounted(async () => {
   if (!store.cohorts.length) await store.fetchCohorts()
