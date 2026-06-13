@@ -28,52 +28,33 @@ const animatedPercentage = computed(() => {
 
 <template>
   <div class="relative flex items-center justify-center" :class="mini ? 'w-12 h-12' : 'w-[160px] h-[160px]'">
-    <svg class="circular-chart text-primary w-full h-full" viewBox="0 0 36 36">
-      <path 
-        class="circle-bg" 
+    <svg class="block m-auto max-w-full max-h-full text-primary w-full h-full" viewBox="0 0 36 36">
+      <path
+        class="fill-none stroke-primary-mist"
+        style="stroke-width: 3.8"
         d="M18 2.0845
            a 15.9155 15.9155 0 0 1 0 31.831
            a 15.9155 15.9155 0 0 1 0 -31.831"
       ></path>
-      <path 
-        class="circle" 
+      <path
+        class="fill-none transition-[stroke-dasharray] duration-1000 ease-out"
+        style="stroke-width: 2.8; stroke-linecap: round"
+        stroke="var(--color-primary)"
         d="M18 2.0845
            a 15.9155 15.9155 0 0 1 0 31.831
-           a 15.9155 15.9155 0 0 1 0 -31.831" 
-        stroke="var(--color-primary)" 
+           a 15.9155 15.9155 0 0 1 0 -31.831"
         :stroke-dasharray="`${animatedPercentage}, 100`"
       ></path>
     </svg>
     <div v-if="!mini" class="absolute flex flex-col items-center justify-center text-center mt-2">
       <span class="font-kpi text-kpi text-on-surface leading-none mb-1">{{ Math.round(total) }}</span>
-      <span class="font-body-sm text-body-sm text-[#6B7280]">/{{ max }} pts</span>
+      <span class="font-body-sm text-body-sm text-on-surface-variant">/{{ max }} pts</span>
     </div>
-    <div 
+    <div
       v-if="!mini && gradeLetter"
-      class="absolute bottom-4 md:bottom-8 right-4 md:right-8 bg-[#8B1A1A] text-white rounded-full px-4 py-1.5 font-h3 text-h3 shadow-sm transform translate-y-4 translate-x-4 md:translate-x-8"
-      style="background-color: var(--color-primary);"
+      class="absolute bottom-4 md:bottom-8 right-4 md:right-8 bg-primary text-white rounded-full px-4 py-1.5 font-h3 text-h3 shadow-sm translate-y-4 translate-x-4 md:translate-x-8"
     >
       {{ gradeLetter }}
     </div>
   </div>
 </template>
-
-<style scoped>
-.circular-chart {
-  display: block;
-  margin: 0 auto;
-  max-width: 100%;
-  max-height: 100%;
-}
-.circle-bg {
-  fill: none;
-  stroke: var(--color-primary-mist);
-  stroke-width: 3.8;
-}
-.circle {
-  fill: none;
-  stroke-width: 2.8;
-  stroke-linecap: round;
-  transition: stroke-dasharray 1s ease-out;
-}
-</style>

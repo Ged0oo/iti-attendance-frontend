@@ -11,7 +11,7 @@ export default [
     {
         path: '/students',
         name: 'students',
-        redirect: '/dashboard',
+        component: () => import('@/views/students/StudentListView.vue'),
         meta: {
             requiresAuth: true,
             roles: ['branch_manager', 'track_admin', 'instructor'],
@@ -20,16 +20,7 @@ export default [
     {
         path: '/instructors',
         name: 'instructors',
-        redirect: '/dashboard',
-        meta: {
-            requiresAuth: true,
-            roles: ['branch_manager', 'track_admin'],
-        },
-    },
-    {
-        path: '/reports',
-        name: 'reports',
-        redirect: '/dashboard',
+        component: () => import('@/views/instructors/InstructorListView.vue'),
         meta: {
             requiresAuth: true,
             roles: ['branch_manager', 'track_admin'],
