@@ -3,56 +3,48 @@
   <div class="flex min-h-screen w-full">
     <!-- Left Panel (Brand/Identity) -->
     <div
-      class="hidden lg:flex w-[45%] relative flex-col justify-center items-center p-margin-desktop overflow-hidden border-r border-shell-border"
+      class="hidden lg:flex w-[45%] bg-[#1A0A0A] relative flex-col justify-center items-center p-margin-desktop overflow-hidden border-r border-shell-border"
+      style="background-image: url('/src/assets/login-bg.png'); background-size: cover; background-position: center;"
     >
-      <!-- Background Image -->
-      <div 
-        class="absolute inset-0 bg-[url('@/assets/login-bg.png')] bg-cover bg-center bg-no-repeat z-0"
-      ></div>
-      
-      <!-- Red Theme Overlay -->
+      <!-- Theme Red Overlay -->
       <div
-        class="absolute inset-0 bg-[#8B1A1A]/80 mix-blend-multiply z-0"
+        class="absolute inset-0 z-0"
+        style="background-color: rgba(139, 26, 26, 0.85);"
       ></div>
-      <!-- Subtle Radial Glow for extra depth -->
-      <div
-        class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(168,32,32,0.4)_0%,rgba(26,10,10,0.8)_100%)] z-0"
-      ></div>
-
       <div
         class="relative z-10 max-w-md w-full flex flex-col items-center text-center space-y-8"
       >
         <!-- Typography Group -->
         <div class="space-y-4">
-          <h1 class="font-h1 text-h1 text-white drop-shadow-md">
+          <h1 class="font-h1 text-h1 text-white">
             Information Technology Institute
           </h1>
-          <p class="font-body-lg text-body-lg text-white/90 max-w-sm mx-auto drop-shadow">
+          <p class="font-body-lg text-body-lg text-white/70 max-w-sm mx-auto">
             Powering Egypt's tech talent — one cohort at a time.
           </p>
         </div>
         <!-- Role Pills Grid -->
-        <div class="pt-8 w-full border-t border-white/20">
+        <div class="pt-8 w-full border-t border-white/10">
           <p
-            class="font-label-caps text-label-caps text-white/70 mb-4 tracking-widest uppercase drop-shadow"
+            class="font-label-caps text-label-caps text-white/50 mb-4 tracking-widest uppercase"
           >
             Portal Access Level
           </p>
           <div class="flex flex-wrap justify-center gap-3">
             <span
-              class="inline-flex items-center px-4 py-1.5 rounded-full font-label text-label bg-white/20 text-white border border-white/10 backdrop-blur-md shadow-sm"
+              class="inline-flex items-center px-4 py-1.5 rounded-full font-label text-label bg-white/10 text-white/90 border border-white/5 backdrop-blur-sm shadow-sm"
               >Branch Manager</span
             >
             <span
-              class="inline-flex items-center px-4 py-1.5 rounded-full font-label text-label bg-white/20 text-white border border-white/10 backdrop-blur-md shadow-sm"
+              class="inline-flex items-center px-4 py-1.5 rounded-full font-label text-label bg-white/10 text-white/90 border border-white/5 backdrop-blur-sm shadow-sm"
               >Track Admin</span
             >
             <span
-              class="inline-flex items-center px-4 py-1.5 rounded-full font-label text-label bg-white/20 text-white border border-white/10 backdrop-blur-md shadow-sm"
+              class="inline-flex items-center px-4 py-1.5 rounded-full font-label text-label bg-white/10 text-white/90 border border-white/5 backdrop-blur-sm shadow-sm"
               >Instructor</span
             >
             <span
-              class="inline-flex items-center px-4 py-1.5 rounded-full font-label text-label bg-white/20 text-white border border-white/10 backdrop-blur-md shadow-sm"
+              class="inline-flex items-center px-4 py-1.5 rounded-full font-label text-label bg-white/10 text-white/90 border border-white/5 backdrop-blur-sm shadow-sm"
               >Student</span
             >
           </div>
@@ -71,11 +63,6 @@
       <div
         class="lg:hidden absolute top-8 left-margin-mobile flex items-center space-x-3"
       >
-        <img
-          alt="ITI Monogram Logo"
-          class="w-10 h-10 rounded shadow-sm"
-          src="@/assets/iti-logo.png"
-        />
         <span class="font-h3 text-h3 text-on-surface">ITI Portal</span>
       </div>
 
