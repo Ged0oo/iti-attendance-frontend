@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useLedgerStore } from '@/stores/ledger'
 import api from '@/services/api'
+import MainLayout from '@/components/layout/MainLayout.vue'
 
 import GrandTotalRing from '@/components/student/GrandTotalRing.vue'
 import CourseGradeBar from '@/components/student/CourseGradeBar.vue'
@@ -127,7 +128,8 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="mt-16 p-8 flex-1 overflow-y-auto max-w-[1400px] mx-auto w-full">
+  <MainLayout title="Grade Card">
+    <div class="p-8 flex-1 overflow-y-auto max-w-[1400px] mx-auto w-full">
     <!-- Header -->
     <div class="mb-8 flex flex-col md:flex-row md:justify-between md:items-end gap-4">
       <div>
@@ -235,7 +237,8 @@ onMounted(async () => {
         </div>
       </div>
     </div>
-  </div>
+    </div>
+  </MainLayout>
 </template>
 
 <style scoped>

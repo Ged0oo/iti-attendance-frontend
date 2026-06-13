@@ -1,5 +1,6 @@
 <template>
-  <div class="excuse-view">
+  <MainLayout title="Submit Excuse">
+    <div class="excuse-view">
     
     <!-- Toast Error Banner -->
     <div v-if="toastError" class="toast-error" role="alert">
@@ -116,7 +117,8 @@
       </button>
     </div>
 
-  </div>
+    </div>
+  </MainLayout>
 </template>
 
 <script setup>
@@ -125,6 +127,7 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { useExcuseStore } from '@/stores/excuse';
 import api from '@/services/api';
+import MainLayout from '@/components/layout/MainLayout.vue';
 import ExcuseUploadZone from '@/components/attendance/ExcuseUploadZone.vue';
 
 const router = useRouter();
@@ -258,12 +261,10 @@ function goBack() {
 
 <style scoped>
 .excuse-view {
-  min-height: calc(100vh - 64px);
-  padding: 24px;
+  padding: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
 }
 
 /* ── Card Container ── */

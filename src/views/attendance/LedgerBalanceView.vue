@@ -1,6 +1,6 @@
 <template>
-  <div class="ledger-view">
-
+  <MainLayout title="Attendance Ledger">
+    <div class="ledger-view">
     <!-- ── LOADING STATE ─────────────────────────────── -->
     <template v-if="ledgerStore.loading">
       <!-- Hero skeleton -->
@@ -59,7 +59,8 @@
       </section>
 
     </template>
-  </div>
+    </div>
+  </MainLayout>
 </template>
 
 <script setup>
@@ -67,6 +68,7 @@ import { computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { useLedgerStore } from '@/stores/ledger';
+import MainLayout from '@/components/layout/MainLayout.vue';
 import BalanceHeroCard from '@/components/attendance/BalanceHeroCard.vue';
 import LedgerTimeline from '@/components/attendance/LedgerTimeline.vue';
 
@@ -99,17 +101,10 @@ onMounted(async () => {
 .ledger-view {
   max-width: 800px;
   margin: 0 auto;
-  padding: 32px;
+  padding: 0;
   display: flex;
   flex-direction: column;
   gap: 24px;
-}
-
-@media (max-width: 640px) {
-  .ledger-view {
-    padding: 16px;
-    gap: 16px;
-  }
 }
 
 /* ── Error banner ── */
