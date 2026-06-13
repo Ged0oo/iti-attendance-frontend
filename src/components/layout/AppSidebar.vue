@@ -30,7 +30,6 @@ const allLinks = [
   { label: 'Course Setup', icon: 'menu_book', to: '/scheduling/courses', roles: ['branch_manager', 'track_admin'] },
   { label: 'Scheduling', icon: 'calendar_month', to: '/scheduling/engagements', roles: ['branch_manager', 'track_admin'] },
   { label: 'Billing', icon: 'payments', to: '/billing', roles: ['branch_manager'] },
-  { label: 'Reports', icon: 'analytics', to: '/reports', roles: ['branch_manager', 'track_admin'] },
 
   // ── Student Portal ──────────────────────────────────────────────────
   { label: 'Attendance',    icon: 'event_available', to: '/attendance/ledger', roles: ['student'] },

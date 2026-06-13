@@ -128,6 +128,35 @@ export default {
             boxShadow: {
                 'elevated': '0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04)',
             },
+            keyframes: {
+                wave: {
+                    '0%': { transform: 'rotate(0deg)' },
+                    '10%': { transform: 'rotate(14deg)' },
+                    '20%': { transform: 'rotate(-8deg)' },
+                    '30%': { transform: 'rotate(14deg)' },
+                    '40%': { transform: 'rotate(-4deg)' },
+                    '50%': { transform: 'rotate(10deg)' },
+                    '60%, 100%': { transform: 'rotate(0deg)' },
+                },
+                qrscan: {
+                    '0%, 100%': { top: '20%' },
+                    '50%': { top: '80%' },
+                },
+                shimmer: {
+                    '0%': { backgroundPosition: '-400px 0' },
+                    '100%': { backgroundPosition: '400px 0' },
+                },
+                slideDown: {
+                    from: { transform: 'translate(-50%, -100%)', opacity: '0' },
+                    to: { transform: 'translate(-50%, 0)', opacity: '1' },
+                },
+            },
+            animation: {
+                wave: 'wave 2.5s infinite',
+                qrscan: 'qrscan 2s ease-in-out infinite',
+                shimmer: 'shimmer 1.4s infinite',
+                slideDown: 'slideDown 0.3s ease',
+            },
         },
     },
     plugins: [require('@tailwindcss/forms')],

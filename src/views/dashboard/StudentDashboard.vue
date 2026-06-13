@@ -1,28 +1,22 @@
 <template>
   <MainLayout title="Academic Portal">
-    <!-- Page title row -->
-    <div class="page-title-row">
-      <div>
-        <div class="greeting-row">
-          <h1 class="greeting">Good morning, {{ authStore.user?.name || 'Student' }} <span class="animate-wave inline-block">👋</span></h1>
-          <span v-if="authStore.user?.cohort" class="cohort-badge">
-            {{ authStore.user?.cohort?.name }}
-          </span>
-        </div>
-        <p class="subtitle">Here is your daily academic overview.</p>
+    <div class="mb-2">
+      <div class="flex items-center gap-3 mb-2">
+        <h1 class="font-h1 text-[36px] leading-[1.15] text-on-surface m-0">Good morning, {{ authStore.user?.name || 'Student' }} <span class="inline-block origin-[70%_70%] animate-wave">👋</span></h1>
+        <span v-if="authStore.user?.cohort" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-mist text-primary border border-primary/20">
+          {{ authStore.user?.cohort?.name }}
+        </span>
       </div>
+      <p class="font-body-md text-base text-on-surface-variant m-0">Here is your daily academic overview.</p>
     </div>
 
-    <!-- Loading State -->
-    <div v-if="isLoading" class="loading-state">
-      <div class="spinner"></div>
+    <div v-if="isLoading" class="flex flex-col items-center justify-center py-16 text-on-surface-variant">
+      <div class="w-10 h-10 border-3 border-primary/10 border-t-primary rounded-full animate-spin mb-4"></div>
       <p>Loading your dashboard...</p>
     </div>
 
     <template v-else>
-      <!-- Row 1: Summary Cards -->
-      <div class="summary-cards-grid">
-        <!-- Card 1: Attendance Balance -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <SummaryCard
           title="Attendance Balance"
           icon="calendar_month"
@@ -30,20 +24,20 @@
         >
           <div class="mt-4">
             <div class="flex items-baseline gap-2">
-              <span class="kpi-value">{{ ledgerStore.balance }}</span>
-              <span class="kpi-total">/ 250 pts</span>
+              <span class="font-h1 text-[40px] leading-none text-on-surface">{{ ledgerStore.balance }}</span>
+              <span class="font-body-md text-xl font-semibold text-on-surface-variant">/ 250 pts</span>
             </div>
           </div>
           <template #footer>
             <div class="mt-6">
-              <div class="progress-bar-bg">
+              <div class="w-full bg-black/5 rounded-full h-1.5 mb-2">
                 <div
-                  class="progress-bar-fill"
+                  class="h-full rounded-full transition-[width] duration-500 ease-out"
                   :class="ledgerStore.isAtRisk ? 'bg-danger' : 'bg-success'"
                   :style="{ width: `${Math.min(100, Math.max(0, (ledgerStore.balance / 250) * 100))}%` }"
                 ></div>
               </div>
-              <div class="status-text" :class="{ 'text-danger': ledgerStore.isAtRisk }">
+              <div class="flex items-center gap-1 text-xs" :class="ledgerStore.isAtRisk ? 'text-danger' : 'text-on-surface-variant'">
                 <span class="material-symbols-outlined text-[14px]">warning</span>
                 <span>{{ ledgerStore.isAtRisk ? 'At-risk below 150 pts' : 'Good standing' }}</span>
               </div>
@@ -51,15 +45,14 @@
           </template>
         </SummaryCard>
 
-        <!-- Card 2: Grand Total Score -->
         <SummaryCard title="Grand Total Score" icon="emoji_events" variant="primary">
           <div class="mt-4 flex justify-between items-center pr-2">
             <div class="flex items-baseline gap-2">
-              <span class="kpi-value">{{ grandTotal }}</span>
-              <span class="kpi-total">/ {{ maxGrandTotal }}</span>
+              <span class="font-h1 text-[40px] leading-none text-on-surface">{{ grandTotal }}</span>
+              <span class="font-body-md text-xl font-semibold text-on-surface-variant">/ {{ maxGrandTotal }}</span>
             </div>
             <div class="flex items-center gap-3">
-              <span class="grade-badge">{{ currentGrade }}</span>
+              <span class="inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-bold bg-primary/10 text-primary">{{ currentGrade }}</span>
               <GrandTotalRing :total="grandTotal" :max="maxGrandTotal" mini />
             </div>
           </div>
@@ -70,68 +63,74 @@
           </template>
         </SummaryCard>
 
-        <!-- Card 3: Pending Actions -->
         <SummaryCard title="Pending Actions" icon="assignment_late" variant="warning">
-          <div class="mt-4 flex-col-center pb-2">
+          <div class="mt-4 flex flex-col items-center justify-center py-2 h-full">
             <span class="font-kpi text-[64px] leading-none text-warning">{{ pendingActionsCount }}</span>
-            <span class="kpi-subtitle mt-2">Unanswered items</span>
+            <span class="font-body-md text-xl font-semibold text-on-surface-variant mt-2">Unanswered items</span>
           </div>
         </SummaryCard>
       </div>
 
-      <!-- Row 2: Panels -->
-      <div class="panels-grid">
-        <div class="panel col-5">
-          <div class="panel-header">
-            <h2 class="panel-title">Recent Announcements</h2>
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-5 bg-surface rounded-3xl border border-black/[0.06] shadow-[0_8px_32px_rgba(0,0,0,0.03)] flex flex-col p-6 transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_24px_48px_-12px_rgba(0,0,0,0.08)] hover:border-black/10">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="font-h1 text-[28px] text-on-surface m-0">Recent Announcements</h2>
             <span class="material-symbols-outlined text-secondary">campaign</span>
           </div>
-          <div class="announcements-list">
-            <div v-if="announcements.length === 0" class="empty-state">No recent announcements.</div>
-            <div v-for="ann in announcements.slice(0,3)" :key="ann.id" class="announcement-item">
-              <div class="announcement-header">
-                <div class="announcer-info">
-                  <span class="announcer-name">{{ ann.author_name || 'Admin' }}</span>
-                  <span class="role-badge">{{ ann.author_role || 'Staff' }}</span>
+          <div class="flex flex-col gap-4 flex-1">
+            <div v-if="announcements.length === 0" class="text-on-surface-variant italic p-4">No recent announcements.</div>
+            <div
+              v-for="ann in announcements.slice(0,3)"
+              :key="ann.id"
+              class="p-4 rounded-2xl bg-surface border border-black/[0.04] shadow-[0_2px_8px_rgba(0,0,0,0.02)] cursor-pointer transition-all duration-300 relative overflow-hidden before:content-[''] before:absolute before:top-0 before:left-0 before:bottom-0 before:w-1 before:bg-primary before:opacity-0 before:transition-opacity before:duration-300 hover:translate-x-1 hover:shadow-[0_8px_16px_rgba(0,0,0,0.06)] hover:border-black/[0.08] hover:before:opacity-100"
+            >
+              <div class="flex justify-between items-start mb-2">
+                <div class="flex items-center gap-2">
+                  <span class="font-body-md text-[13px] font-semibold text-on-surface">{{ ann.author_name || 'Admin' }}</span>
+                  <span class="inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-role-instructor/10 text-role-instructor">{{ ann.author_role || 'Staff' }}</span>
                 </div>
-                <span class="announcement-time">{{ formatDateShort(ann.created_at) }}</span>
+                <span class="font-mono text-xs text-on-surface-variant">{{ formatDateShort(ann.created_at) }}</span>
               </div>
-              <p class="announcement-title">{{ ann.title }}</p>
+              <p class="font-body-md text-sm text-on-surface m-0 transition-colors duration-200">{{ ann.title }}</p>
             </div>
           </div>
         </div>
 
-        <!-- Right Panel: Course Grades -->
-        <div class="panel col-7 no-padding">
-          <div class="panel-header-padded">
-            <h2 class="panel-title">My Course Grades</h2>
-            <button class="icon-btn"><span class="material-symbols-outlined">more_vert</span></button>
+        <div class="lg:col-span-7 bg-surface rounded-3xl border border-black/[0.06] shadow-[0_8px_32px_rgba(0,0,0,0.03)] flex flex-col transition-all duration-500 hover:-translate-y-1 hover:shadow-[0_24px_48px_-12px_rgba(0,0,0,0.08)] hover:border-black/10 overflow-hidden">
+          <div class="flex justify-between items-center p-6 border-b border-black/5">
+            <h2 class="font-h1 text-[28px] text-on-surface m-0">My Course Grades</h2>
+            <button class="bg-transparent border-none text-on-surface-variant cursor-pointer p-1 rounded-full transition-colors hover:text-primary hover:bg-black/5">
+              <span class="material-symbols-outlined">more_vert</span>
+            </button>
           </div>
-          <div class="course-grades-list">
-            <CourseGradeBar 
-              v-for="grade in courseGrades" 
+          <div class="flex flex-col gap-4 p-6">
+            <CourseGradeBar
+              v-for="grade in courseGrades"
               :key="grade.course.name"
               :course-obj="grade"
             />
-            <div v-if="courseGrades.length === 0" class="empty-state py-4 text-center">
+            <div v-if="courseGrades.length === 0" class="text-on-surface-variant italic py-4 text-center">
               No grades available yet.
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Row 3: Upcoming Sessions -->
-      <div class="sessions-section">
-        <div class="sessions-header">
-          <h2 class="panel-title">Upcoming Sessions</h2>
-          <div class="sessions-nav">
-            <button class="nav-btn" @click="scrollSessions(-1)"><span class="material-symbols-outlined">chevron_left</span></button>
-            <button class="nav-btn" @click="scrollSessions(1)"><span class="material-symbols-outlined">chevron_right</span></button>
+      <div class="flex flex-col">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="font-h1 text-[28px] text-on-surface m-0">Upcoming Sessions</h2>
+          <div class="flex gap-2">
+            <button class="w-8 h-8 rounded-full border border-black/10 bg-transparent flex items-center justify-center text-on-surface-variant cursor-pointer transition-colors hover:bg-black/5" @click="scrollSessions(-1)">
+              <span class="material-symbols-outlined">chevron_left</span>
+            </button>
+            <button class="w-8 h-8 rounded-full border border-black/10 bg-transparent flex items-center justify-center text-on-surface-variant cursor-pointer transition-colors hover:bg-black/5" @click="scrollSessions(1)">
+              <span class="material-symbols-outlined">chevron_right</span>
+            </button>
           </div>
         </div>
-        <div class="sessions-scroll" ref="sessionsScrollRef">
-          <div v-if="sessions.length === 0" class="empty-state">No upcoming sessions scheduled.</div>
-          <SessionCard 
+        <div class="flex overflow-x-auto gap-6 pb-4 snap-x snap-mandatory scrollbar-hide" ref="sessionsScrollRef">
+          <div v-if="sessions.length === 0" class="text-on-surface-variant italic p-4">No upcoming sessions scheduled.</div>
+          <SessionCard
             v-for="session in sessions"
             :key="session.id"
             :date="formatDateShort(session.start_time)"
@@ -147,112 +146,106 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import { useAuthStore } from '@/stores/auth';
-import { useLedgerStore } from '@/stores/ledger';
-import api from '@/services/api';
-import MainLayout from '@/components/layout/MainLayout.vue';
+import { ref, onMounted, computed } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+import { useLedgerStore } from '@/stores/ledger'
+import api from '@/services/api'
+import MainLayout from '@/components/layout/MainLayout.vue'
 
-import SummaryCard from '@/components/student/SummaryCard.vue';
-import GrandTotalRing from '@/components/student/GrandTotalRing.vue';
-import CourseGradeBar from '@/components/student/CourseGradeBar.vue';
-import SessionCard from '@/components/student/SessionCard.vue';
+import SummaryCard from '@/components/student/SummaryCard.vue'
+import GrandTotalRing from '@/components/student/GrandTotalRing.vue'
+import CourseGradeBar from '@/components/student/CourseGradeBar.vue'
+import SessionCard from '@/components/student/SessionCard.vue'
 
-const authStore = useAuthStore();
-const ledgerStore = useLedgerStore();
+const authStore = useAuthStore()
+const ledgerStore = useLedgerStore()
 
-const isLoading = ref(true);
-const announcements = ref([]);
-const sessions = ref([]);
-const courseGrades = ref([]);
-const pendingActionsCount = ref(0);
+const isLoading = ref(true)
+const announcements = ref([])
+const sessions = ref([])
+const courseGrades = ref([])
+const pendingActionsCount = ref(0)
 
-const sessionsScrollRef = ref(null);
+const sessionsScrollRef = ref(null)
 
 const scrollSessions = (direction) => {
   if (sessionsScrollRef.value) {
-    const scrollAmount = 344; // Card width + gap
-    sessionsScrollRef.value.scrollBy({ left: scrollAmount * direction, behavior: 'smooth' });
+    const scrollAmount = 344
+    sessionsScrollRef.value.scrollBy({ left: scrollAmount * direction, behavior: 'smooth' })
   }
-};
+}
 
 const grandTotal = computed(() => {
-  // Grand Total = Attendance Ledger + Sum of Course Normalized Scores
-  const courseSum = courseGrades.value.reduce((sum, g) => sum + (g.total_score || 0), 0);
-  return ledgerStore.balance + courseSum;
-});
+  const courseSum = courseGrades.value.reduce((sum, g) => sum + (g.total_score || 0), 0)
+  return ledgerStore.balance + courseSum
+})
 
 const maxGrandTotal = computed(() => {
   const courseMax = courseGrades.value.reduce((sum, g) => sum + (g.course?.max_score || 100), 0)
-  return 250 + courseMax;
-});
+  return 250 + courseMax
+})
 
 const currentGrade = computed(() => {
-  if (maxGrandTotal.value === 0) return 'N/A';
-  const pct = (grandTotal.value / maxGrandTotal.value) * 100;
-  if (pct >= 90) return 'A';
-  if (pct >= 85) return 'B+';
-  if (pct >= 80) return 'B';
-  if (pct >= 75) return 'C+';
-  if (pct >= 70) return 'C';
-  if (pct >= 60) return 'D';
-  return 'F';
-});
+  if (maxGrandTotal.value === 0) return 'N/A'
+  const pct = (grandTotal.value / maxGrandTotal.value) * 100
+  if (pct >= 90) return 'A'
+  if (pct >= 85) return 'B+'
+  if (pct >= 80) return 'B'
+  if (pct >= 75) return 'C+'
+  if (pct >= 70) return 'C'
+  if (pct >= 60) return 'D'
+  return 'F'
+})
 
 onMounted(async () => {
   try {
     if (!authStore.user) {
-      await authStore.fetchMe();
+      await authStore.fetchMe()
     }
-    
-    const studentId = authStore.user?.student_id;
-    let cohortId = authStore.user?.cohort_id;
+
+    const studentId = authStore.user?.student_id
+    let cohortId = authStore.user?.cohort_id
 
     if (studentId) {
-      // Fetch student profile to get cohort_id if it's missing from /me
       if (!cohortId) {
         try {
-          const profileRes = await api.get(`/students/${studentId}`);
-          cohortId = profileRes.data?.data?.cohort_id || profileRes.data?.cohort_id;
+          const profileRes = await api.get(`/students/${studentId}`)
+          cohortId = profileRes.data?.data?.cohort_id || profileRes.data?.cohort_id
         } catch (e) {
-          console.error("Could not fetch student profile", e);
+          console.error("Could not fetch student profile", e)
         }
       }
     }
 
-    const promises = [];
+    const promises = []
 
     if (studentId) {
       promises.push(
         ledgerStore.fetchLedger(studentId).catch(() => {})
-      );
+      )
     }
 
-    // Fetch sessions
     promises.push(
       api.get('/sessions').then(res => {
-        sessions.value = res.data.data || res.data || [];
+        sessions.value = res.data.data || res.data || []
       }).catch(() => {})
-    );
+    )
 
-    // Fetch announcements
     if (cohortId) {
       promises.push(
         api.get(`/cohorts/${cohortId}/announcements`).then(res => {
-          announcements.value = res.data.data || res.data || [];
+          announcements.value = res.data.data || res.data || []
         }).catch(() => {})
-      );
+      )
     }
 
-    // Fetch excuse requests (for pending actions count)
     promises.push(
       api.get('/excuse-requests').then(res => {
-        const requests = res.data.data || res.data || [];
-        pendingActionsCount.value = requests.filter((r) => r.status === 'pending').length;
+        const requests = res.data.data || res.data || []
+        pendingActionsCount.value = requests.filter((r) => r.status === 'pending').length
       }).catch(() => {})
-    );
+    )
 
-    // Fetch real course grades from grade-card endpoint
     if (studentId) {
       promises.push(
         api.get(`/students/${studentId}/grade-card`).then(res => {
@@ -277,451 +270,25 @@ onMounted(async () => {
       )
     }
 
-    await Promise.allSettled(promises);
+    await Promise.allSettled(promises)
   } catch {
-    // silently fail on dashboard load
   } finally {
-    isLoading.value = false;
+    isLoading.value = false
   }
-});
+})
 
 const formatDateShort = (dateStr) => {
-  if (!dateStr) return '';
-  const d = new Date(dateStr);
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-};
+  if (!dateStr) return ''
+  const d = new Date(dateStr)
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
 
 const formatTimeRange = (start, end) => {
-  if (!start) return '';
+  if (!start) return ''
   const formatTime = (timeStr) => {
-    const d = new Date(timeStr);
-    return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-  };
-  return `${formatTime(start)} - ${end ? formatTime(end) : '?'}`;
-};
+    const d = new Date(timeStr)
+    return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })
+  }
+  return `${formatTime(start)} - ${end ? formatTime(end) : '?'}`
+}
 </script>
-
-<style scoped>
-.page-title-row {
-  margin-bottom: 8px;
-}
-
-.greeting-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 8px;
-}
-
-.greeting {
-  font-family: "DM Serif Display", "Playfair Display", serif;
-  font-size: 36px;
-  line-height: 1.15;
-  color: var(--color-text, #1A1A2E);
-  margin: 0;
-}
-
-.cohort-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 10px;
-  border-radius: 9999px;
-  font-size: 12px;
-  font-weight: 500;
-  background-color: var(--color-primary-mist, #F9EAEA);
-  color: var(--color-primary, #8B1A1A);
-  border: 1px solid rgba(139, 26, 26, 0.2);
-}
-
-.subtitle {
-  font-family: "DM Sans", sans-serif;
-  font-size: 16px;
-  color: var(--color-text-secondary, #6B7280);
-  margin: 0;
-}
-
-
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 64px 0;
-  color: var(--color-text-secondary, #6B7280);
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(139, 26, 26, 0.1);
-  border-top-color: var(--color-primary, #8B1A1A);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 16px;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-@keyframes fadeSlideUp {
-  0% { opacity: 0; transform: translateY(20px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
-
-.summary-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(1, 1fr);
-  gap: 24px;
-}
-
-.summary-cards-grid > * {
-  animation: fadeSlideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
-.summary-cards-grid > *:nth-child(1) { animation-delay: 0.1s; }
-.summary-cards-grid > *:nth-child(2) { animation-delay: 0.2s; }
-.summary-cards-grid > *:nth-child(3) { animation-delay: 0.3s; }
-
-@media (min-width: 768px) {
-  .summary-cards-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-.kpi-value {
-  font-family: "DM Serif Display", "Playfair Display", serif;
-  font-size: 40px;
-  line-height: 1;
-  color: var(--color-text, #1A1A2E);
-}
-
-.kpi-total {
-  font-family: "DM Sans", sans-serif;
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--color-text-secondary, #6B7280);
-}
-
-.kpi-subtitle {
-  font-family: "DM Sans", sans-serif;
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--color-text-secondary, #6B7280);
-}
-
-.progress-bar-bg {
-  width: 100%;
-  background-color: rgba(0,0,0,0.05);
-  border-radius: 9999px;
-  height: 6px;
-  margin-bottom: 8px;
-}
-
-.progress-bar-fill {
-  height: 100%;
-  border-radius: 9999px;
-  transition: width 0.5s ease-out;
-}
-
-.bg-success { background-color: var(--color-success, #059669); }
-.bg-danger  { background-color: var(--color-danger, #DC2626); }
-
-.status-text {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  color: var(--color-text-secondary, #6B7280);
-}
-
-.text-danger {
-  color: var(--color-danger, #DC2626);
-}
-.text-warning {
-  color: var(--color-warning, #D97706);
-}
-.text-secondary {
-  color: var(--color-text-secondary, #6B7280);
-}
-
-.flex-between {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.flex-center {
-  display: flex;
-  align-items: center;
-}
-
-.flex-col-center {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 8px 0;
-  height: 100%;
-}
-
-.grade-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px 12px;
-  border-radius: 9999px;
-  font-size: 14px;
-  font-weight: bold;
-  background-color: rgba(139, 26, 26, 0.1);
-  color: var(--color-primary, #8B1A1A);
-}
-
-.panels-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 24px;
-}
-
-.panels-grid > * {
-  animation: fadeSlideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-}
-.panels-grid > *:nth-child(1) { animation-delay: 0.4s; }
-.panels-grid > *:nth-child(2) { animation-delay: 0.5s; }
-
-@media (min-width: 1024px) {
-  .panels-grid {
-    grid-template-columns: repeat(12, 1fr);
-  }
-  .col-5 { grid-column: span 5 / span 5; }
-  .col-7 { grid-column: span 7 / span 7; }
-}
-
-.panel {
-  background-color: var(--color-surface, #FFFFFF);
-  border-radius: 24px;
-  border: 1px solid rgba(0,0,0,0.06);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.03);
-  display: flex;
-  flex-direction: column;
-  padding: 24px;
-  transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.panel:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 24px 48px -12px rgba(0,0,0,0.08);
-  border-color: rgba(0,0,0,0.1);
-}
-
-.panel.no-padding {
-  padding: 0;
-}
-
-.panel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.panel-header-padded {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 24px;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
-}
-
-.panel-title {
-  font-family: "DM Serif Display", "Playfair Display", serif;
-  font-size: 28px;
-  color: var(--color-text, #1A1A2E);
-  margin: 0;
-}
-
-.icon-btn {
-  background: none;
-  border: none;
-  color: var(--color-text-secondary, #6B7280);
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 50%;
-  transition: color 0.2s, background-color 0.2s;
-}
-
-.icon-btn:hover {
-  color: var(--color-primary, #8B1A1A);
-  background-color: rgba(0,0,0,0.05);
-}
-
-.announcements-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  flex: 1;
-}
-
-.announcement-item {
-  padding: 16px;
-  border-radius: 16px;
-  background-color: var(--color-surface, #FFFFFF);
-  border: 1px solid rgba(0,0,0,0.04);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-.announcement-item::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; bottom: 0; width: 4px;
-  background-color: var(--color-primary, #8B1A1A);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.announcement-item:hover {
-  transform: translateX(4px);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.06);
-  border-color: rgba(0,0,0,0.08);
-}
-
-.announcement-item:hover::before {
-  opacity: 1;
-}
-
-.announcement-item:hover .announcement-title {
-  color: var(--color-primary, #8B1A1A);
-}
-
-.announcement-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 8px;
-}
-
-.announcer-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.announcer-name {
-  font-family: "DM Sans", sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-text, #1A1A2E);
-}
-
-.role-badge {
-  display: inline-flex;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: bold;
-  text-transform: uppercase;
-  background-color: rgba(13, 148, 136, 0.1);
-  color: #0D9488;
-}
-
-.announcement-time {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 12px;
-  color: var(--color-text-secondary, #6B7280);
-}
-
-.announcement-title {
-  font-family: "DM Sans", sans-serif;
-  font-size: 14px;
-  color: var(--color-text, #1A1A2E);
-  margin: 0;
-  transition: color 0.2s;
-}
-
-
-
-.course-grades-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 24px;
-}
-
-.sessions-section {
-  display: flex;
-  flex-direction: column;
-  animation: fadeSlideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-  animation-delay: 0.6s;
-}
-
-.sessions-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.sessions-nav {
-  display: flex;
-  gap: 8px;
-}
-
-.nav-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1px solid rgba(0,0,0,0.1);
-  background-color: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-text-secondary, #6B7280);
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.nav-btn:hover {
-  background-color: rgba(0,0,0,0.05);
-}
-
-.sessions-scroll {
-  display: flex;
-  overflow-x: auto;
-  gap: 24px;
-  padding-bottom: 16px;
-  scroll-snap-type: x mandatory;
-}
-
-.sessions-scroll::-webkit-scrollbar {
-  display: none;
-}
-.sessions-scroll {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.empty-state {
-  color: var(--color-text-secondary, #6B7280);
-  font-style: italic;
-  padding: 16px;
-}
-
-@keyframes wave {
-  0% { transform: rotate(0deg); }
-  10% { transform: rotate(14deg); }
-  20% { transform: rotate(-8deg); }
-  30% { transform: rotate(14deg); }
-  40% { transform: rotate(-4deg); }
-  50% { transform: rotate(10deg); }
-  60% { transform: rotate(0deg); }
-  100% { transform: rotate(0deg); }
-}
-.animate-wave {
-  transform-origin: 70% 70%;
-  animation: wave 2.5s infinite;
-  display: inline-block;
-}
-</style>

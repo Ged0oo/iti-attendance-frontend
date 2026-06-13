@@ -25,22 +25,16 @@ const animatedPercentage = computed(() => {
   return isMounted.value ? percentage.value : 0
 })
 
-const colorClass = computed(() => {
-  if (percentage.value >= 60) return 'bg-primary border-primary-mist text-primary'
-  if (percentage.value >= 50) return 'bg-warning border-warning-mist text-warning'
-  return 'bg-danger border-danger-mist text-danger'
+const barColor = computed(() => {
+  if (percentage.value >= 60) return 'var(--color-primary)'
+  if (percentage.value >= 50) return 'var(--color-warning)'
+  return 'var(--color-danger)'
 })
 
 const hoverBorderClass = computed(() => {
-  if (percentage.value >= 60) return 'hover:border-[var(--color-primary-mist)]'
-  if (percentage.value >= 50) return 'hover:border-[var(--color-warning-mist)]'
-  return 'hover:border-[var(--color-danger-mist)]'
-})
-
-const barBgClass = computed(() => {
-  if (percentage.value >= 60) return 'background-color: var(--color-primary);'
-  if (percentage.value >= 50) return 'background-color: var(--color-warning);'
-  return 'background-color: var(--color-danger);'
+  if (percentage.value >= 60) return 'hover:border-primary-mist'
+  if (percentage.value >= 50) return 'hover:border-warning-mist'
+  return 'hover:border-danger-mist'
 })
 
 const componentsText = computed(() => {
@@ -55,40 +49,30 @@ const componentsText = computed(() => {
 </script>
 
 <template>
-  <div 
+  <div
     class="bg-surface rounded-xl p-5 shadow-sm hover:shadow-md transition-all group border border-transparent relative overflow-hidden"
     :class="hoverBorderClass"
-    style="background-color: var(--color-surface);"
   >
     <div class="flex justify-between items-center mb-3">
-      <span class="font-body-md text-body-md font-bold text-on-surface" style="color: var(--color-text);">
+      <span class="font-body-md text-body-md font-bold text-on-surface">
         {{ courseObj.course?.name || 'Unknown Course' }}
       </span>
-      <span class="font-mono text-mono text-on-surface" style="color: var(--color-text);">
+      <span class="font-mono text-mono text-on-surface">
         {{ Math.round(courseObj.total_score) }} / {{ courseObj.course?.max_score || 0 }}
       </span>
     </div>
-    
-    <div class="w-full rounded-full h-[6px] overflow-hidden" style="background-color: var(--color-canvas);">
-      <div 
-        class="h-full rounded-full transition-all duration-500" 
-        :style="`width: ${animatedPercentage}%; ${barBgClass}`"
+
+    <div class="w-full rounded-full h-[6px] overflow-hidden bg-canvas">
+      <div
+        class="h-full rounded-full transition-all duration-500"
+        :style="`width: ${animatedPercentage}%; background-color: ${barColor}`"
       ></div>
     </div>
-    
-    <!-- Hover Detail -->
-    <div 
-      class="h-0 opacity-0 group-hover:h-auto group-hover:opacity-100 group-hover:mt-3 transition-all duration-300 overflow-hidden font-body-sm text-body-sm pt-2"
-      style="color: var(--color-text-secondary); border-top: 1px solid var(--color-canvas);"
+
+    <div
+      class="h-0 opacity-0 group-hover:h-auto group-hover:opacity-100 group-hover:mt-3 transition-all duration-300 overflow-hidden font-body-sm text-body-sm text-on-surface-variant pt-2 border-t border-canvas"
     >
       {{ componentsText }}
     </div>
   </div>
 </template>
-
-<style scoped>
-/* Fallback styles in case variables are missed */
-.bg-surface {
-  background-color: var(--color-surface, #ffffff);
-}
-</style>

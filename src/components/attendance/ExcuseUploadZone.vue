@@ -1,7 +1,10 @@
 <template>
   <div
-    class="upload-zone group"
-    :class="{ 'is-dragover': isDragOver, 'has-file': modelValue }"
+    class="w-full border-[1.5px] border-dashed border-primary rounded-xl p-8 bg-[#FFF8F7] cursor-pointer flex flex-col items-center justify-center gap-2 transition-colors duration-200 group"
+    :class="{
+      'bg-primary-mist': isDragOver && !modelValue,
+      '!cursor-default !border-solid !border-outline-variant !bg-white !p-4': modelValue
+    }"
     @dragover.prevent="onDragOver"
     @dragleave.prevent="onDragLeave"
     @drop.prevent="onDrop"
@@ -10,25 +13,25 @@
     <input
       type="file"
       ref="fileInput"
-      class="hidden-input"
+      class="hidden"
       accept=".pdf,image/jpeg,image/png"
       @change="onFileChange"
     />
 
     <template v-if="!modelValue">
-      <span class="material-symbols-outlined upload-icon">upload_file</span>
-      <p class="upload-text">Drop PDF, JPG or PNG &middot; Max 1MB</p>
+      <span class="material-symbols-outlined text-primary text-[32px] transition-transform duration-200 group-hover:-translate-y-1">upload_file</span>
+      <p class="font-body-md text-sm text-on-surface-variant m-0">Drop PDF, JPG or PNG &middot; Max 1MB</p>
     </template>
-    
+
     <template v-else>
-      <div class="file-chip" @click.stop>
-        <span class="material-symbols-outlined file-icon">description</span>
-        <div class="file-info">
-          <span class="file-name">{{ modelValue.name }}</span>
-          <span class="file-size">{{ formatSize(modelValue.size) }}</span>
+      <div class="flex items-center gap-3 w-full bg-canvas p-3 rounded-lg border border-outline-variant" @click.stop>
+        <span class="material-symbols-outlined text-on-surface-variant text-2xl">description</span>
+        <div class="flex-1 flex flex-col overflow-hidden">
+          <span class="font-body-md text-sm font-medium text-on-surface whitespace-nowrap overflow-hidden text-ellipsis">{{ modelValue.name }}</span>
+          <span class="font-body-md text-xs text-on-surface-variant">{{ formatSize(modelValue.size) }}</span>
         </div>
-        <button type="button" class="remove-btn" @click.stop="removeFile" aria-label="Remove file">
-          <span class="material-symbols-outlined">close</span>
+        <button type="button" class="flex items-center justify-center bg-transparent border-none text-danger cursor-pointer p-1 rounded transition-colors hover:bg-danger-mist" @click.stop="removeFile" aria-label="Remove file">
+          <span class="material-symbols-outlined text-xl">close</span>
         </button>
       </div>
     </template>
@@ -36,192 +39,79 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref } from 'vue'
 
 const props = defineProps({
   modelValue: { default: null }
-});
+})
 
-const emit = defineEmits(['update:modelValue', 'validation-error']);
+const emit = defineEmits(['update:modelValue', 'validation-error'])
 
-const fileInput = ref(null);
-const isDragOver = ref(false);
+const fileInput = ref(null)
+const isDragOver = ref(false)
 
-const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
-const MAX_SIZE = 1048576; // 1MB
+const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png']
+const MAX_SIZE = 1048576
 
 function onDragOver() {
   if (!props.modelValue) {
-    isDragOver.value = true;
+    isDragOver.value = true
   }
 }
 
 function onDragLeave() {
-  isDragOver.value = false;
+  isDragOver.value = false
 }
 
 function onDrop(event) {
-  isDragOver.value = false;
-  if (props.modelValue) return; // Prevent overwriting without explicit remove
+  isDragOver.value = false
+  if (props.modelValue) return
 
-  const files = event.dataTransfer?.files;
+  const files = event.dataTransfer?.files
   if (files && files.length > 0) {
-    const file = files.item(0);
-    if (file) handleFile(file);
+    const file = files.item(0)
+    if (file) handleFile(file)
   }
 }
 
 function triggerInput() {
   if (!props.modelValue && fileInput.value) {
-    fileInput.value.click();
+    fileInput.value.click()
   }
 }
 
 function onFileChange(event) {
-  const target = event.target;
+  const target = event.target
   if (target.files && target.files.length > 0) {
-    const file = target.files.item(0);
-    if (file) handleFile(file);
-    // Reset input so the same file can be selected again after removal
-    target.value = '';
+    const file = target.files.item(0)
+    if (file) handleFile(file)
+    target.value = ''
   }
 }
 
 function handleFile(file) {
   if (!ALLOWED_TYPES.includes(file.type)) {
-    emit('validation-error', 'Invalid file type. Only PDF, JPG, or PNG are allowed.');
-    return;
+    emit('validation-error', 'Invalid file type. Only PDF, JPG, or PNG are allowed.')
+    return
   }
 
   if (file.size > MAX_SIZE) {
-    emit('validation-error', 'File is too large. Maximum size is 1MB.');
-    return;
+    emit('validation-error', 'File is too large. Maximum size is 1MB.')
+    return
   }
 
-  emit('update:modelValue', file);
+  emit('update:modelValue', file)
 }
 
 function removeFile() {
-  emit('update:modelValue', null);
+  emit('update:modelValue', null)
 }
 
 function formatSize(bytes) {
-  if (bytes === 0) return '0 B';
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  if (bytes === 0) return '0 B'
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
 }
 </script>
-
-<style scoped>
-.upload-zone {
-  width: 100%;
-  border: 1.5px dashed #8B1A1A;
-  border-radius: 12px;
-  padding: 32px;
-  background-color: #FFF8F7; /* surface-bright from design */
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
-}
-
-.upload-zone:hover:not(.has-file),
-.upload-zone.is-dragover {
-  background-color: #F9EAEA; /* primary-mist */
-}
-
-.upload-zone.has-file {
-  cursor: default;
-  border-style: solid;
-  border-color: #e0bfbc; /* outline-variant */
-  background-color: #ffffff;
-  padding: 16px;
-}
-
-.hidden-input {
-  display: none;
-}
-
-.upload-icon {
-  color: #8b1a1a; /* primary-container */
-  font-size: 32px;
-  transition: transform 0.2s ease;
-}
-
-.upload-zone:hover:not(.has-file) .upload-icon {
-  transform: translateY(-4px);
-}
-
-.upload-text {
-  font-family: "DM Sans", system-ui, sans-serif;
-  font-size: 14px;
-  color: #6B7280;
-  margin: 0;
-}
-
-/* File Chip State */
-.file-chip {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  background-color: #F7F7F7; /* canvas */
-  padding: 12px 16px;
-  border-radius: 8px;
-  border: 1px solid #e0bfbc;
-}
-
-.file-icon {
-  color: #6B7280;
-  font-size: 24px;
-}
-
-.file-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.file-name {
-  font-family: "DM Sans", system-ui, sans-serif;
-  font-size: 14px;
-  font-weight: 500;
-  color: #1A1A2E;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.file-size {
-  font-family: "DM Sans", system-ui, sans-serif;
-  font-size: 12px;
-  color: #6B7280;
-}
-
-.remove-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  color: #DC2626; /* crimson */
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
-  transition: background-color 0.2s ease;
-}
-
-.remove-btn:hover {
-  background-color: #FEF2F2; /* danger-mist */
-}
-
-.remove-btn .material-symbols-outlined {
-  font-size: 20px;
-}
-</style>
