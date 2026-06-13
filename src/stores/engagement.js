@@ -181,6 +181,12 @@ export const useEngagementStore = defineStore('engagement', {
         return data.data
       })
     },
+    deleteSession(id) {
+      return this._run(async () => {
+        await api.delete(`/api/sessions/${id}`)
+        this.sessions = this.sessions.filter((s) => s.id !== id)
+      })
+    },
 
     // --- Billing ---
     fetchBilling(cohortId) {
