@@ -46,12 +46,12 @@ const pct = computed(() =>
   Math.min(100, Math.max(0, (props.balance / props.max) * 100))
 );
 
-const kpiColor = computed(() => (props.isAtRisk ? '#DC2626' : '#059669'));
+const kpiColor = computed(() => (props.isAtRisk ? 'var(--color-danger)' : 'var(--color-success)'));
 </script>
 
 <style scoped>
 .hero-card {
-  background: #fff;
+  background: var(--color-surface);
   border-radius: 20px;
   padding: 32px;
   position: relative;
@@ -77,8 +77,8 @@ const kpiColor = computed(() => (props.isAtRisk ? '#DC2626' : '#059669'));
   opacity: 0.65;
   transform: scale(1.12);
 }
-.blob--success { background: #ECFDF5; }
-.blob--danger  { background: #FEF2F2; }
+.blob--success { background: var(--color-success-mist); }
+.blob--danger  { background: var(--color-danger-mist); }
 
 .hero-card__body {
   position: relative;
@@ -92,7 +92,7 @@ const kpiColor = computed(() => (props.isAtRisk ? '#DC2626' : '#059669'));
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #6B7280;
+  color: var(--color-text-secondary);
   margin: 0 0 16px 0;
 }
 
@@ -116,7 +116,7 @@ const kpiColor = computed(() => (props.isAtRisk ? '#DC2626' : '#059669'));
   font-family: "DM Sans", system-ui, sans-serif;
   font-size: 28px;
   font-weight: 400;
-  color: #6B7280;
+  color: var(--color-text-secondary);
 }
 
 /* PROGRESS BAR */
@@ -135,15 +135,15 @@ const kpiColor = computed(() => (props.isAtRisk ? '#DC2626' : '#059669'));
   transition: width 0.6s ease, background-color 0.4s ease;
 }
 
-.fill--success { background-color: #059669; }
-.fill--danger  { background-color: #DC2626; }
+.fill--success { background-color: var(--color-success); }
+.fill--danger  { background-color: var(--color-danger); }
 
 /* WARNING ROW */
 .hero-card__warning {
   display: flex;
   align-items: flex-start;
   gap: 6px;
-  color: #6B7280;
+  color: var(--color-text-secondary);
 }
 
 .hero-card__warning .material-symbols-outlined {
@@ -160,7 +160,7 @@ const kpiColor = computed(() => (props.isAtRisk ? '#DC2626' : '#059669'));
 }
 
 .hero-card__warning.warning--active {
-  color: #DC2626;
+  color: var(--color-danger);
   font-weight: 500;
 }
 

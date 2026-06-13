@@ -94,6 +94,20 @@ export const useCohortStore = defineStore('cohort', () => {
     }
   }
 
+  async function fetchTrackAdmins(id) {
+    loading.value = true;
+    error.value = null;
+    try {
+      const res = await api.get(`/tracks/${id}/admins`);
+      return res.data?.data || res.data || [];
+    } catch (err) {
+      error.value = err.response?.data?.message || err.message || 'Failed to load track admins';
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
   return {
     cohorts,
     currentCohort,
@@ -103,6 +117,7 @@ export const useCohortStore = defineStore('cohort', () => {
     fetchCohorts,
     fetchCohort,
     fetchTracks,
+    fetchTrackAdmins,
     fetchAtRiskStudents,
     fetchBilling,
     fetchAttendanceRate

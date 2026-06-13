@@ -28,5 +28,11 @@ export default [
             requiresAuth: true, 
             allowedRoles: ['instructor', 'track_admin', 'branch_manager'] 
         }
+    },
+    {
+        path: '/student/grades',
+        name: 'student-grade-card',
+        component: () => import('@/views/dashboard/StudentGradeCardView.vue'),
+        meta: { requiresAuth: true, roles: ['student'] }
     }
 ];

@@ -5,7 +5,11 @@ Internal management system for the Information Technology Institute (ITI), Egypt
 Full-stack: Laravel 11 REST API backend + Vue 3 SPA frontend.
 Backend is live at: http://13.60.179.178/api
 Auth: Laravel Sanctum (Bearer token)
-Language: TypeScript (tsconfig files present — use <script setup lang="ts">)
+<!-- CORRECTED: tsconfig files exist but are NOT used in practice. All real
+     stores/views in this repo are .js / .vue WITHOUT lang="ts". Do NOT add
+     lang="ts" or TypeScript types/interfaces to any file — match the existing
+     plain-JS Composition API style exactly. -->
+Language: JavaScript (Vue 3 Composition API, plain <script setup> — no TypeScript)
 
 ## My Role — M5
 I own the Student Portal and Attendance modules:
@@ -22,13 +26,18 @@ I own the Student Portal and Attendance modules:
 5. src/views/dashboard/StudentGradeCardView.vue
 
 ## Tech Stack
-- Vue 3 Composition API — ALWAYS use <script setup lang="ts"> syntax
-- TypeScript throughout
-- Pinia for state management
+- Vue 3 Composition API — ALWAYS use plain <script setup> (NO "lang=ts")
+- Plain JavaScript throughout — no TS types/interfaces/generics
+- Pinia for state management (Setup Stores for excuse.js, Options Stores for
+  ledger.js/attendance.js — match each file's existing style, don't convert)
 - Vue Router 4 — routes split by domain file (attendance.routes.js, excuse.routes.js)
 - API via src/services/api.js — DO NOT create a new axios file
-- Composables: src/composables/useApi.js and useAuth.js — USE THEM, don't duplicate
-- NO Tailwind, NO Bootstrap — scoped CSS only
+<!-- CORRECTED: src/composables/useApi.js does NOT exist in this repo.
+     Available composables are: useAuth.js, usePasswordFlow.js, useUtils.js. -->
+- Composables: src/composables/useAuth.js — USE for auth helpers, don't duplicate
+- Tailwind utility classes are the project convention — use them freely;
+scoped CSS is only for things Tailwind can't express, like the SVG ring in
+GrandTotalRing.vue
 - jsQR library for QR scanning
 
 ## Design System (from DESIGN.md — AUTHORITATIVE SOURCE)
@@ -77,6 +86,30 @@ Buttons (primary):
 ## API Base URL
 http://13.60.179.178/api
 
+## API endpoints
+Always when dealing with endpoints do not assume anything but look for it in the
+postman_collection.json.
+
+<!-- ADDED: known data-layer facts, confirmed against the codebase, to stop Gemini
+     from re-guessing these every session: -->
+## Known Data Shapes (do not re-derive — verified)
+- The authenticated user object (src/stores/auth.js `user` state, populated by
+  /me) does NOT have top-level `studentId`/`cohortId`/`studentProfile` getters.
+  Always read `authStore.user?.student_id`, `authStore.user?.cohort_id`,
+  `authStore.user?.cohort` directly from the `user` object — never invent a
+  getter on auth.js (it's M1's file, read-only for me).
+- src/stores/ledger.js exposes: balance, max, threshold (150), entries, loading,
+  error, getters isAtRisk/balancePercentage, action fetchLedger(studentId).
+- src/stores/attendance.js exposes: scanState ('scanning'|'checked-in'|
+  'checked-out'|'duplicate'|'expired'|'invalid'|'wrong-day'|'error'), loading,
+  lastScanResult, action submitScan(qrCodeString) [never throws], action
+  resetScan().
+- src/stores/excuse.js (Setup Store) exposes: excuseRequests, submitting,
+  submitted, fieldErrors, actions fetchExcuseRequests/submitExcuse/reset.
+- Router route names I depend on (do not rename without updating my router.push
+  calls): 'submit-excuse' (/excuses/submit), 'student-ledger' (/attendance/ledger),
+  'dashboard.student' (/dashboards/student), 'student-grade-card' (/student/grades).
+
 ## Stitch Exports (reference HTML for pixel-accurate conversion)
 stitch-exports/student_dashboard_iti_platform/code.html
 stitch-exports/attendance_ledger_iti_student_portal/code.html
@@ -99,12 +132,14 @@ I ADD ROUTES TO (don't rewrite, just append):
 I EXTEND IF NEEDED (file exists, check first before adding):
   src/stores/ledger.js
   src/stores/attendance.js
+<!-- ADDED: excuse.js was missing from this list even though ExcuseFormView.vue
+     depends on it and I'm the only consumer. -->
+  src/stores/excuse.js
 
 I READ ONLY (never modify):
   src/stores/auth.js             <- M1
   src/stores/grading.js          <- M6
   src/services/api.js            <- shared
-  src/composables/useApi.js
   src/composables/useAuth.js
 
 I NEVER TOUCH:
@@ -114,6 +149,10 @@ I NEVER TOUCH:
   src/views/auth/
   src/stores/cohort.js
   src/stores/engagement.js
+<!-- ADDED: flag, don't delete, this orphaned/duplicate file if encountered: -->
+  src/views/excuses/LedgerBalanceView.vue  <- NOT mine, not routed, unclear
+                                               ownership — flag to team lead,
+                                               do not edit or delete unilaterally
 
 ## Sub-components I Will Create
 src/components/attendance/
@@ -130,8 +169,9 @@ src/components/student/
   SessionCard.vue
 
 ## Skills to Load
-Always:        @antigravity-workflows @context-driven-development
-UI conversion: @stitch-ui-design @antigravity-design-expert
-Components:    @senior-frontend @ui-component
-Testing:       @tdd-workflow
-Debugging:     @systematic-debugging
+Always:        /antigravity-workflows
+/context-driven-development
+UI conversion: /stitch-ui-design/antigravity-design-expert
+Components:    /senior-frontend/ui-component
+Testing:       /tdd-workflow
+Debugging:     /systematic-debugging

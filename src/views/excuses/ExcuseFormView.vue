@@ -159,7 +159,7 @@ onMounted(async () => {
   if (!authStore.user) {
     await authStore.fetchMe();
   }
-  const studentId = authStore.studentId;
+  const studentId = authStore.user?.student_id;
 
   try {
     // 1. Fetch past sessions
@@ -252,7 +252,7 @@ async function handleSubmit() {
 }
 
 function goBack() {
-  router.push({ name: 'LedgerBalance' });
+  router.push({ name: 'student-ledger' });
 }
 </script>
 

@@ -142,7 +142,7 @@
 
     <!-- Bottom nav bar -->
     <nav class="bottom-nav">
-      <router-link to="/student/dashboard" class="nav-item" active-class="nav-item--active">
+      <router-link :to="{ name: 'dashboard.student' }" class="nav-item" active-class="nav-item--active">
         <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">home</span>
         <span>Home</span>
       </router-link>
@@ -150,11 +150,13 @@
         <span class="material-symbols-outlined" :style="{ fontVariationSettings: $route.path === '/attendance/scan' ? '\'FILL\' 1' : '\'FILL\' 0' }">qr_code_scanner</span>
         <span>Scan</span>
       </router-link>
-      <router-link to="/student/grades" class="nav-item" active-class="nav-item--active">
+      <router-link :to="{ name: 'student-grade-card' }" class="nav-item" active-class="nav-item--active">
         <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">conditions</span>
         <span>Grades</span>
       </router-link>
-      <router-link to="/profile" class="nav-item" active-class="nav-item--active">
+      <!-- TODO: no /profile route exists yet in the router — confirm with the
+           owning member before this link goes live -->
+      <router-link :to="{ name: 'dashboard.student' }" class="nav-item" active-class="nav-item--active">
         <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">person</span>
         <span>Profile</span>
       </router-link>
@@ -163,7 +165,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import jsQR from 'jsqr'
 import { useAttendanceStore } from '@/stores/attendance'
 import { useAuthStore } from '@/stores/auth'
