@@ -19,8 +19,11 @@ const form = reactive({
 
 const courses = computed(() => gradeCard.value?.courses ?? []);
 const student = computed(() => gradeCard.value?.student ?? null);
-const totalCourseScore = computed(() => {
+const overallScore = computed(() => {
     return courses.value.reduce((sum, course) => sum + Number(course.total_score ?? 0), 0);
+});
+const overallMaxScore = computed(() => {
+    return courses.value.reduce((sum, course) => sum + courseMaxScore(course), 0);
 });
 
 async function loadCard() {
@@ -49,6 +52,18 @@ function progressWidth(score) {
     const value = Math.max(0, Math.min(100, Number(score ?? 0)));
 
     return `${value}%`;
+}
+
+function courseMaxScore(course) {
+    return Number(course.course?.max_score ?? 100);
+}
+
+function componentMaxScore(component) {
+    return Number(component.grade_component?.weight ?? 0);
+}
+
+function hasOverride(component) {
+    return component.override_value !== null && component.override_value !== undefined;
 }
 
 onMounted(loadCard);
@@ -97,8 +112,11 @@ onMounted(loadCard);
                     </div>
 
                     <div class="mt-8 rounded-xl bg-primary-mist p-5">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-primary-container">Course total</p>
-                        <p class="mt-2 font-mono text-4xl text-primary-container">{{ totalCourseScore.toFixed(2) }}</p>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-primary-container">Overall Score</p>
+                        <p class="mt-2 font-mono text-4xl text-primary-container">
+                            {{ overallScore.toFixed(2) }}
+                            <span class="text-xl text-primary-container/70">/ {{ overallMaxScore }}</span>
+                        </p>
                     </div>
 
                     <div class="mt-6">
@@ -113,7 +131,7 @@ onMounted(loadCard);
                 </div>
 
                 <div class="space-y-4">
-                    <h2 class="text-xl font-semibold text-on-surface">Course Score Breakdown</h2>
+                    <h2 class="text-xl font-semibold text-on-surface">Course Scores</h2>
 
                     <div v-if="courses.length === 0" class="rounded-xl bg-white p-6 text-sm text-slate-500 shadow-sm">
                         No graded courses returned yet.
@@ -125,7 +143,10 @@ onMounted(loadCard);
                                 <h3 class="text-lg font-semibold text-on-surface">{{ course.course?.name || 'Uncategorized course' }}</h3>
                                 <p class="text-sm text-slate-500">{{ course.components?.length || 0 }} components</p>
                             </div>
-                            <span class="font-mono text-lg font-semibold text-on-surface">{{ course.total_score }} / 100</span>
+                            <div class="text-right">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Course Score</p>
+                                <p class="font-mono text-lg font-semibold text-on-surface">{{ course.total_score }} / {{ courseMaxScore(course) }}</p>
+                            </div>
                         </div>
 
                         <div class="mt-4 h-2 overflow-hidden rounded-full bg-slate-100">
@@ -133,16 +154,24 @@ onMounted(loadCard);
                         </div>
 
                         <div class="mt-4 divide-y divide-slate-100">
-                            <div v-for="component in course.components" :key="component.id" class="grid gap-2 py-3 text-sm sm:grid-cols-[1fr_auto_auto] sm:items-center">
+                            <div v-for="component in course.components" :key="component.id" class="grid gap-3 py-4 text-sm sm:grid-cols-[1fr_110px_120px] sm:items-center">
                                 <div>
-                                    <p class="font-medium text-on-surface">{{ component.grade_component?.name || `Component #${component.grade_component_id}` }}</p>
-                                    <p class="text-xs text-slate-500">Raw score {{ component.raw_score }} / {{ component.grade_component?.raw_max ?? '-' }}</p>
+                                    <div class="flex flex-wrap items-center gap-2">
+                                        <p class="font-medium text-on-surface">{{ component.grade_component?.name || `Component #${component.grade_component_id}` }}</p>
+                                        <span v-if="hasOverride(component)" class="rounded-md bg-[#FFFBEB] px-2 py-1 text-xs font-semibold text-[#D97706]">Overridden</span>
+                                    </div>
+                                    <p v-if="component.override_note" class="mt-2 rounded-lg bg-[#FFFBEB] px-3 py-2 text-xs text-[#D97706]">
+                                        {{ component.override_note }}
+                                    </p>
                                 </div>
-                                <div class="font-mono text-slate-700">Normalized {{ component.normalized_score }}</div>
-                                <div class="font-mono font-semibold text-on-surface">Effective {{ component.effective_score }}</div>
-                                <p v-if="component.override_note" class="rounded-lg bg-[#FFFBEB] px-3 py-2 text-xs text-[#D97706] sm:col-span-3">
-                                    Override note: {{ component.override_note }}
-                                </p>
+                                <div>
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Raw</p>
+                                    <p class="mt-1 font-mono text-on-surface">{{ component.raw_score }} / {{ component.grade_component?.raw_max ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500">Score</p>
+                                    <p class="mt-1 font-mono font-semibold text-on-surface">{{ component.effective_score }} / {{ componentMaxScore(component) }}</p>
+                                </div>
                             </div>
                         </div>
                     </article>
