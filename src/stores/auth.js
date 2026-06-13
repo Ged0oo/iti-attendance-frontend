@@ -20,7 +20,7 @@ export const useAuthStore = defineStore('auth', {
             console.log(import.meta.env.VITE_API_BASE_URL);
 
             try {
-                const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/api/login`, {
+                const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/login`, {
                     email,
                     password
                 }, {
@@ -37,6 +37,25 @@ export const useAuthStore = defineStore('auth', {
 
             } catch (error) {
                 this.error = error.response?.data?.message || 'Login failed';
+                throw error;
+            } finally {
+                this.loading = false;
+            }
+        },
+        async fetchMe() {
+            this.loading = true;
+            this.error = null;
+            try {
+                const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/me`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${this.token}`
+                    }
+                });
+                this.user = response.data;
+                localStorage.setItem('user', JSON.stringify(this.user));
+            } catch (error) {
+                this.error = error.response?.data?.message || 'Failed to fetch user';
                 throw error;
             } finally {
                 this.loading = false;

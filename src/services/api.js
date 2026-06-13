@@ -10,6 +10,15 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
+    // Sanitize URL to handle inconsistent route prefixes in codebase
+    if (config.url && import.meta.env.VITE_API_BASE_URL?.endsWith('/api')) {
+        if (config.url.startsWith('/api/')) {
+            config.url = config.url.substring(4); // Keep leading slash: /cohorts
+        } else if (config.url.startsWith('api/')) {
+            config.url = '/' + config.url.substring(4);
+        }
+    }
+
     const token = localStorage.getItem('token');
     if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
