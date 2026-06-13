@@ -52,8 +52,7 @@
               <span class="font-body-md text-xl font-semibold text-on-surface-variant">/ {{ maxGrandTotal }}</span>
             </div>
             <div class="flex items-center gap-3">
-              <span class="inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-bold bg-primary/10 text-primary">{{ currentGrade }}</span>
-              <GrandTotalRing :total="grandTotal" :max="maxGrandTotal" mini />
+              <GrandTotalRing :total="grandTotal" :max="maxGrandTotal" :grade-letter="currentGrade" mini />
             </div>
           </div>
           <template #footer>
