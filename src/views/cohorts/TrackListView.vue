@@ -85,18 +85,26 @@ async function saveEditTrack() {
 }
 
 const showAssignAdmin = ref(false)
-const assignEmail = ref('')
+const assignUserId = ref('')
 const assignError = ref(null)
 const assignLoading = ref(false)
+const trackAdminUsers = ref([])
+
+async function fetchTrackAdminUsers() {
+  try {
+    const res = await api.get('/api/users', { params: { role: 'track_admin' } })
+    trackAdminUsers.value = res.data?.data || res.data || []
+  } catch (e) { /* ignore */ }
+}
 
 async function assignAdmin() {
   assignError.value = null
   assignLoading.value = true
   try {
-    await store.assignTrackAdmin(selected.value.id, assignEmail.value)
+    await store.assignTrackAdmin(selected.value.id, assignUserId.value)
     admins.value = await store.fetchTrackAdmins(selected.value.id)
     showAssignAdmin.value = false
-    assignEmail.value = ''
+    assignUserId.value = ''
   } catch (e) {
     assignError.value = e.response?.data?.message || 'Failed to assign admin'
   }
@@ -125,7 +133,7 @@ function fmtDate(d) {
 }
 
 onMounted(async () => {
-  await Promise.all([store.fetchTracks(), store.fetchCohorts(), fetchBranches()])
+  await Promise.all([store.fetchTracks(), store.fetchCohorts(), fetchBranches(), fetchTrackAdminUsers()])
   if (store.tracks.length) await selectTrack(store.tracks[0].id)
 })
 </script>
@@ -359,12 +367,15 @@ onMounted(async () => {
         <h3 class="font-h3 text-h3 text-on-surface mb-4">Assign Track Admin</h3>
         <p v-if="assignError" class="text-danger font-body-sm text-body-sm mb-3 bg-danger-mist border border-danger/20 rounded-lg px-4 py-2">{{ assignError }}</p>
         <div class="flex flex-col gap-2">
-          <label class="font-label text-label text-on-surface-variant">User ID</label>
-          <input v-model="assignEmail" type="text" placeholder="Enter user ID" class="h-11 rounded-lg border border-outline-variant bg-surface px-4 font-body-md text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none" />
+          <label class="font-label text-label text-on-surface-variant">User</label>
+          <select v-model="assignUserId" class="h-11 rounded-lg border border-outline-variant bg-surface px-4 font-body-md text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none">
+            <option value="" disabled>Select a user</option>
+            <option v-for="u in trackAdminUsers" :key="u.id" :value="u.id">{{ u.name }}</option>
+          </select>
         </div>
         <div class="flex justify-end gap-3 mt-6">
           <button class="px-5 py-2.5 rounded-lg font-label text-label text-on-surface-variant hover:bg-surface-sunken transition-colors" @click="showAssignAdmin = false">Cancel</button>
-          <button class="px-5 py-2.5 rounded-lg font-label text-label bg-primary text-white hover:bg-primary-deep transition-colors shadow-sm" :disabled="!assignEmail || assignLoading" :class="{ 'opacity-50 cursor-not-allowed': !assignEmail || assignLoading }" @click="assignAdmin">
+          <button class="px-5 py-2.5 rounded-lg font-label text-label bg-primary text-white hover:bg-primary-deep transition-colors shadow-sm" :disabled="!assignUserId || assignLoading" :class="{ 'opacity-50 cursor-not-allowed': !assignUserId || assignLoading }" @click="assignAdmin">
             {{ assignLoading ? 'Assigning...' : 'Assign' }}
           </button>
         </div>
