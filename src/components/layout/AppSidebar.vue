@@ -394,4 +394,72 @@ async function logout() {
 .logout-btn .material-symbols-outlined {
   font-size: 16px;
 }
+
+/* ── Mobile View (Bottom Navigation) ───────────────────────────────── */
+@media (max-width: 1023px) {
+  .sidebar {
+    top: auto;
+    bottom: 0;
+    width: 100%;
+    height: 72px;
+    flex-direction: row;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.4);
+    z-index: 50;
+  }
+
+  .sidebar::before {
+    height: 1px; /* Thinner top accent */
+  }
+
+  .sidebar::after {
+    display: none; /* Hide left rail */
+  }
+
+  .brand, .user-footer {
+    display: none;
+  }
+
+  .nav-scroll {
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0;
+    width: 100%;
+  }
+
+  .nav-item {
+    flex-direction: column;
+    padding: 8px 4px;
+    border-radius: 0;
+    gap: 4px;
+    background: transparent !important;
+    border: none !important;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .nav-label {
+    font-size: 10px;
+    text-align: center;
+  }
+
+  .nav-icon {
+    font-size: 24px;
+  }
+
+  .nav-glow {
+    display: none;
+  }
+
+  /* Top active indicator bar for mobile */
+  .nav-item--active::before {
+    left: 20%;
+    right: 20%;
+    top: 0;
+    bottom: auto;
+    width: auto;
+    height: 3px;
+    border-radius: 0 0 3px 3px;
+  }
+}
 </style>

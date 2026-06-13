@@ -11,14 +11,14 @@ defineProps({
   <div class="flex w-screen overflow-x-hidden bg-canvas text-on-surface antialiased">
     <AppSidebar />
 
-    <div class="flex-1 ml-[240px] min-w-0 min-h-screen flex flex-col overflow-x-hidden">
+    <div class="flex-1 lg:ml-[240px] pb-[72px] lg:pb-0 min-w-0 min-h-screen flex flex-col overflow-x-hidden">
       <AppHeader :title="title">
         <template #action>
           <slot name="action" />
         </template>
       </AppHeader>
 
-      <main class="flex-1 p-margin-desktop w-full flex flex-col gap-8">
+      <main class="flex-1 p-4 lg:p-margin-desktop w-full flex flex-col gap-8">
         <slot />
       </main>
     </div>
