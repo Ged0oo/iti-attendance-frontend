@@ -37,3 +37,14 @@ __screenshots__/
 
 # Vite
 *.timestamp-*-*.mjs
+
+.env
+
+#stitch
+stitch-exports
+
+# Temporary tools output
+ts_errors.txt
+lint-output.txt
+repomix-output.xml
+graphify-out/
